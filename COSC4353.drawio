@@ -139,7 +139,7 @@
         <mxCell id="S0cULvaeLyhhmC89bf4R-19" value="&lt;b&gt;Database&lt;/b&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;perimeterSpacing=5;" parent="S0cULvaeLyhhmC89bf4R-80" vertex="1">
           <mxGeometry x="47.5" y="40" width="105" height="140" as="geometry" />
         </mxCell>
-        <mxCell id="S0cULvaeLyhhmC89bf4R-86" value="API (Mailchimp or Mailgun)&amp;nbsp;" style="swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="S0cULvaeLyhhmC89bf4R-86" value="API (SMTP Provider)" style="swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="350" y="-133" width="280" height="260" as="geometry" />
         </mxCell>
         <mxCell id="hosQwZhVCX8DwAwgYeaI-6" value="&lt;b&gt;Email System&lt;/b&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;Used to send notifications and confirmation for sign up to a user&lt;/div&gt;" style="whiteSpace=wrap;html=1;perimeterSpacing=5;rounded=1;spacingTop=0;spacing=10;" parent="S0cULvaeLyhhmC89bf4R-86" vertex="1">
