@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36" version="26.0.10">
   <diagram name="Page-1" id="u88Wsmz9A-Ij5X2KmUaO">
-    <mxGraphModel dx="1491" dy="2929" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1200" math="0" shadow="0">
+    <mxGraphModel dx="870" dy="2208" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1200" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -93,7 +93,7 @@
         <mxCell id="S0cULvaeLyhhmC89bf4R-17" value="Updates, reminders, and assignments" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="S0cULvaeLyhhmC89bf4R-37" vertex="1">
           <mxGeometry x="110" y="520" width="160" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="S0cULvaeLyhhmC89bf4R-87" value="API request" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="S0cULvaeLyhhmC89bf4R-37" vertex="1">
+        <mxCell id="S0cULvaeLyhhmC89bf4R-87" value="(Backend for Frontend)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="S0cULvaeLyhhmC89bf4R-37" vertex="1">
           <mxGeometry x="710" y="559" width="123" height="70" as="geometry" />
         </mxCell>
         <mxCell id="S0cULvaeLyhhmC89bf4R-44" value="" style="group" parent="1" vertex="1" connectable="0">
