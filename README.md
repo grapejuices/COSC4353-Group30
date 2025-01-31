@@ -43,7 +43,8 @@ When registering, the user will be prompted to input their email, username, and 
   -	SMTP (for emails): Mailersend
 
 
-![Diagram](https://github.com/grapejuices/COSC4353-Group30/blob/master/COSC4353.drawio.svg)
+![Diagram](https://github.com/grapejuices/COSC4353-Group30/blob/master/Diagram.drawio.svg)
+![Database](https://github.com/grapejuices/COSC4353-Group30/blob/master/Database.drawio.svg)
 
 ## Group Members
 
