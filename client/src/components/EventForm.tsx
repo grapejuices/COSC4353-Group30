@@ -1,29 +1,30 @@
-import { VolunteerEvent } from "./EventTable";
-import * as React from "react";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useEffect, useState } from "react";
-import { SheetFooter } from "./ui/sheet";
-import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { skills } from "@/lib/temporary_values";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import * as React from "react";
+import { useEffect, useState } from "react";
 import Select from 'react-select';
+import { VolunteerEvent } from "./EventTable";
+import { SheetFooter } from "./ui/sheet";
 
 interface EventFormProps {
-  VEvent: VolunteerEvent;
+  selectedEvent: VolunteerEvent;
   closeSheet: () => void;
 }
 
-export const EventForm: React.FC<EventFormProps> = ({ VEvent, closeSheet }) => {
+export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet }) => {
   const [event, setEvent] = useState<VolunteerEvent | null>(null);
 
   useEffect(() => {
-    setEvent(VEvent);
-  }, [VEvent]);
+    setEvent(selectedEvent);
+  }, [selectedEvent]);
 
   if (!event) {
     return <div>Loading...</div>;
@@ -68,7 +69,16 @@ export const EventForm: React.FC<EventFormProps> = ({ VEvent, closeSheet }) => {
         className="w-full p-2 border rounded-md"
       />
       <Label>Urgency</Label>
-      <Input value={event.urgency} onChange={(e) => setEvent({ ...event, urgency: e.target.value })} />
+      <Select
+        value={{ value: event.urgency, label: event.urgency }}
+        onChange={(selectedOption: any) => setEvent({ ...event, urgency: selectedOption.value })}
+        options={[
+          { value: "Low", label: "Low" },
+          { value: "Medium", label: "Medium" },
+          { value: "High", label: "High" },
+          { value: "Critical", label: "Critical" },
+        ]}
+        className="w-full p-2 border rounded-md" />
       <Label>Date</Label>
       <Popover>
         <PopoverTrigger asChild>
@@ -114,3 +124,31 @@ export const EventForm: React.FC<EventFormProps> = ({ VEvent, closeSheet }) => {
     </form>
   );
 };
+
+interface EventSheetProps {
+  selectedEvent: VolunteerEvent | null;
+  closeSheet: () => void;
+}
+
+export const EventSheet: React.FC<EventSheetProps> = ({ selectedEvent, closeSheet }) => {
+  return (
+    <Sheet open={!!selectedEvent} onOpenChange={closeSheet}>
+      <SheetContent side="right">
+        <SheetHeader>
+          <SheetTitle>Edit Event</SheetTitle>
+          <SheetClose />
+        </SheetHeader>
+        <SheetDescription>
+          <b>
+            For changes to take effect, please save the event.
+          </b>
+        </SheetDescription>
+        {selectedEvent ? (
+          <EventForm selectedEvent={selectedEvent} closeSheet={closeSheet} />
+        ) : (
+          <div>Loading...</div>
+        )}
+      </SheetContent>
+    </Sheet>
+  );
+}

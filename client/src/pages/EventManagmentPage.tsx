@@ -1,7 +1,6 @@
-import { useState } from "react";
-import { EventForm } from "@/components/EventForm";
+import { EventSheet } from "@/components/EventForm";
 import { EventTable, VolunteerEvent } from "@/components/EventTable";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from "@/components/ui/sheet";
+import { useState } from "react";
 
 export const EveManagement = () => {
   const [selectedEvent, setSelectedEvent] = useState<VolunteerEvent | null>(null);
@@ -15,24 +14,9 @@ export const EveManagement = () => {
   };
 
   return (
-    <div className="flex flex-row flex-wrap">
+    <div>
       <EventTable onEditEvent={handleEditEvent} />
-      <Sheet open={!!selectedEvent} onOpenChange={closeSheet}>
-        <SheetContent side="right">
-          <SheetHeader>
-            <SheetTitle>Edit Event</SheetTitle>
-            <SheetClose />
-          </SheetHeader>
-          <SheetDescription>
-            Edit the details of the event below.
-          </SheetDescription>
-            {selectedEvent ? (
-              <EventForm VEvent={selectedEvent} closeSheet={closeSheet} />
-            ) : (
-              <div>Loading...</div>
-            )}
-        </SheetContent>
-      </Sheet>
+      <EventSheet selectedEvent={selectedEvent} closeSheet={closeSheet} />
     </div>
   );
 };

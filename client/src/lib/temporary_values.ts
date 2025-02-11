@@ -9,7 +9,7 @@ export const skills = [
   "Handyman",
 ];
 
-export const urgency = ["Urgent", "High", "Medium", "Low"];
+export const urgencyLevels = ["Critical", "High", "Medium", "Low"];
 
 export const status = ["Pending", "Completed", "No Show", "Cancelled"];
 
@@ -19,8 +19,8 @@ const randomSkills = () => {
 }
 
 const randomUrgency = () => {
-  const randomIndex = Math.floor(Math.random() * urgency.length);
-  return urgency[randomIndex];
+  const randomIndex = Math.floor(Math.random() * urgencyLevels.length);
+  return urgencyLevels[randomIndex];
 }
 
 const randomStatus = () => {
@@ -40,6 +40,8 @@ const randomInt = (max: number) => {
 function createRandomData(): VolunteerEvent {
   var rInt = randomInt(100);
 
+  var volun = rInt > 50 ? `Volunteer ${rInt}` : '';
+
   return {
     status: randomStatus(),
     id: rInt.toString(),
@@ -49,14 +51,14 @@ function createRandomData(): VolunteerEvent {
     skills: randomSkills(),
     urgency: randomUrgency(),
     date: randomDate(),
-    volunteer: `Volunteer ${randomInt(100)}`,
+    volunteer: `${volun}`,
   };
 }
 
 
 // Fetch data from database
 export async function getData(): Promise<VolunteerEvent[]> {
-    
+
   const data = Array.from({ length: 10 }, createRandomData);
   return new Promise((resolve) => {
     setTimeout(() => {

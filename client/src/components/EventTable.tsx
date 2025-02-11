@@ -1,11 +1,7 @@
 "use client"
 
-import { getData } from "@/lib/temporary_values";
-import { useEffect, useState } from "react"
-import { ColumnDef } from "@tanstack/react-table"
-import { ArrowUpDown, MoreHorizontal } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { DataTable } from "@/components/ui/data-table"
+import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/ui/data-table";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -13,7 +9,11 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
+import { getData, urgencyLevels } from "@/lib/temporary_values";
+import { ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { useEffect, useState } from "react";
 
 // Define the type of the data
 export type VolunteerEvent = {
@@ -50,9 +50,8 @@ export const EventTable: React.FC<EventTableProps> = ({ onEditEvent }) => {
     }
 
     // Custom sorting function for urgency
-    const urgencyOrder = ["Urgent", "High", "Medium", "Low"];
     const customSortUrgency = (rowA: any, rowB: any) => {
-        return urgencyOrder.indexOf(rowA.original.urgency) - urgencyOrder.indexOf(rowB.original.urgency);
+        return urgencyLevels.indexOf(rowA.original.urgency) - urgencyLevels.indexOf(rowB.original.urgency);
     };
 
     // Define the columns of the table
@@ -124,6 +123,9 @@ export const EventTable: React.FC<EventTableProps> = ({ onEditEvent }) => {
                     </Button>
                 )
             },
+            cell: ({ row }) => {
+                return row.original.date.toLocaleDateString();
+            }
         },
         {
             accessorKey: "volunteer",
