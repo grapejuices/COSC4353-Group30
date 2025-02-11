@@ -10,23 +10,10 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getData, urgencyLevels } from "@/lib/temporary_values";
+import { getEvents, urgencyLevels, VolunteerEvent } from "@/lib/temporary_values";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
-
-// Define the type of the data
-export type VolunteerEvent = {
-    status: string
-    id: string
-    name: string
-    description: string
-    location: string
-    skills: string[]
-    urgency: string
-    date: Date
-    volunteer: string
-}
 
 interface EventTableProps {
     onEditEvent: (event: VolunteerEvent) => void;
@@ -38,7 +25,7 @@ export const EventTable: React.FC<EventTableProps> = ({ onEditEvent }) => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const result = await getData();
+            const result = await getEvents();
             setData(result);
             setLoading(false);
         };
@@ -53,6 +40,10 @@ export const EventTable: React.FC<EventTableProps> = ({ onEditEvent }) => {
     const customSortUrgency = (rowA: any, rowB: any) => {
         return urgencyLevels.indexOf(rowA.original.urgency) - urgencyLevels.indexOf(rowB.original.urgency);
     };
+
+    const customSortVolunteer = (rowA: any, rowB: any) => {
+        return rowA.original.volunteer.name.localeCompare(rowB.original.volunteer.name);
+    }
 
     // Define the columns of the table
     const columns: ColumnDef<VolunteerEvent>[] = [
@@ -137,6 +128,10 @@ export const EventTable: React.FC<EventTableProps> = ({ onEditEvent }) => {
                     </Button>
                 )
             },
+            sortingFn: customSortVolunteer,
+            cell: ({ row }) => {
+                return row.original.volunteer.name;
+            }
         },
     ]
 

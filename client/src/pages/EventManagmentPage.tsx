@@ -1,5 +1,6 @@
 import { EventSheet } from "@/components/EventForm";
-import { EventTable, VolunteerEvent } from "@/components/EventTable";
+import { EventTable } from "@/components/EventTable";
+import { VolunteerEvent } from "@/lib/temporary_values";
 import { useState } from "react";
 
 export const EveManagement = () => {

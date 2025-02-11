@@ -4,14 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { skills } from "@/lib/temporary_values";
+import { skills, staticVolunteer } from "@/lib/temporary_values";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import Select from 'react-select';
-import { VolunteerEvent } from "./EventTable";
+import { VolunteerEvent } from "@/lib/temporary_values";
 import { SheetFooter } from "./ui/sheet";
 
 interface EventFormProps {
@@ -44,7 +44,7 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet 
 
   const handleAssignVolunteer = () => {
     // Logic to assign a volunteer
-    setEvent({ ...event, volunteer: "Assigned Volunteer" });
+    setEvent({ ...event, volunteer: staticVolunteer });
   };
 
   const handleSkillsChange = (selectedOptions: any) => {
@@ -54,13 +54,13 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet 
 
   return (
     <form onSubmit={handleSubmit}>
-      <Label>Name</Label>
+      <Label className="mt-4 text-lg">Name</Label>
       <Input value={event.name} onChange={(e) => setEvent({ ...event, name: e.target.value })} />
-      <Label>Description</Label>
+      <Label className="mt-4 text-lg">Description</Label>
       <Input value={event.description} onChange={(e) => setEvent({ ...event, description: e.target.value })} />
-      <Label>Location</Label>
+      <Label className="mt-4 text-lg">Location</Label>
       <Input value={event.location} onChange={(e) => setEvent({ ...event, location: e.target.value })} />
-      <Label>Skills</Label>
+      <Label className="mt-4 text-lg">Skills</Label>
       <Select
         isMulti
         value={event.skills.map(skill => ({ value: skill, label: skill }))}
@@ -68,7 +68,7 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet 
         options={skills.map(skill => ({ value: skill, label: skill }))}
         className="w-full p-2 border rounded-md"
       />
-      <Label>Urgency</Label>
+      <Label className="mt-4 text-lg">Urgency</Label>
       <Select
         value={{ value: event.urgency, label: event.urgency }}
         onChange={(selectedOption: any) => setEvent({ ...event, urgency: selectedOption.value })}
@@ -79,7 +79,7 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet 
           { value: "Critical", label: "Critical" },
         ]}
         className="w-full p-2 border rounded-md" />
-      <Label>Date</Label>
+      <Label className="mt-4 text-lg">Date</Label>
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -106,10 +106,14 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet 
           />
         </PopoverContent>
       </Popover>
-      <Label className="mt-4">Volunteer</Label>
+      <Label className="mt-4 text-lg">Assigned Volunteer</Label>
       <div>
-        {event.volunteer ? (
-          <p className="text-sm text-muted-foreground">{event.volunteer}</p>
+        {event.volunteer.id != "-1" ? (
+          <div>
+            <p className="text-sm text-muted-foreground"><b>Name:</b> {event.volunteer.name}</p>
+            <p className="text-sm text-muted-foreground"><b>Skills:</b> {event.volunteer.skills.join(", ")}</p>
+            <p className="text-sm text-muted-foreground"><b>Availability:</b> {event.volunteer.availability.map(date => format(date, "PPP")).join(", ")}</p>
+          </div>
         ) : (
           <Button variant={"outline"} className="mt-2" onClick={handleAssignVolunteer}>
             Assign Volunteer
