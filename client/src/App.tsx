@@ -14,7 +14,7 @@ function App() {
       <Routes>
         <Route path='/' element={<LoginPage />}/>
         <Route path='/signup' element={<SignUpPage />}/>
-        <Route path='/event-management' element={<EveManagement />}/>
+        <Route path='/edashboard' element={<EveManagement />}/>
         <Route path='/profile' element={<p>Complete your volunteer profile.</p>} />
         <Route path='/vdashboard' element={<p>Volunteer Dashboard.</p>} />
         <Route path='/adashboard' element={<p>Admin Dashboard.</p>} />
