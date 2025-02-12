@@ -49,6 +49,8 @@ REST_FRAMEWORK = {
     ),
 }
 
+JWT_AUTH_HEADER_PREFIX = "Bearer"
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',

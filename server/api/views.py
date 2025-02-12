@@ -41,7 +41,15 @@ class LoginView(APIView):
 
         if user:
             refresh = RefreshToken.for_user(user)
-            return Response({"refresh": str(refresh), "access": str(refresh.access_token)})
+            user_profile = UserProfile.objects.filter(user=user).first()
+            
+            
+            return Response({
+                "refresh": str(refresh), 
+                "access": str(refresh.access_token),
+                "is_admin": user.is_admin,
+                "profile": UserProfileSerializer(user_profile).data if user_profile else None
+            })
         return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
     
 class UserProfileView(generics.RetrieveUpdateAPIView):

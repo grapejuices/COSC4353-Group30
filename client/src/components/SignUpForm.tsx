@@ -48,9 +48,15 @@ export const SignUpForm = () => {
             });
 
             console.log("Signup successful:", response.data);
-            localStorage.setItem("authToken", response.data.access);
+            localStorage.setItem("access_token", response.data.access);
+            localStorage.setItem("refresh_token", response.data.refresh);
 
-            navigate("/profile");
+            if (response.data.user.is_admin) {
+                navigate('/adashboard');
+            }
+            else {
+                navigate('/profile');
+            }
 
         } catch (error) {
             console.error("Signup failed:", error);
@@ -97,7 +103,7 @@ export const SignUpForm = () => {
                         <Label htmlFor="passwordC" className="text-white">Confirm Password</Label>
                         <Input
                             id="passwordC"
-                            type="passwordC"
+                            type="password"
                             placeholder="Confirm your password"
                             className="mt-1 bg-gray-800 text-white border-gray-600 focus:ring-gray-500"
                             value={formData.passwordC}
@@ -115,7 +121,7 @@ export const SignUpForm = () => {
 
                     {error && <p className="text-red-500 text-sm">{error}</p>}
                     
-                    <Button className="w-full bg-white text-black hover:bg-gray-300 rounded">
+                    <Button className="w-full bg-white text-black hover:bg-gray-300 rounded" disabled={loading}>
                         {loading ? "Signing Up..." : "Sign Up"}
                     </Button>
                 </form>
