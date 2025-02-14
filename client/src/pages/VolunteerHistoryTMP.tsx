@@ -1,5 +1,5 @@
 // import { EventSheet } from "@/components/EventForm";
-import { EventTable } from "@/components/EventTable";
+import { VolunteerTable } from "@/components/VolunteerTable";
 import { VolunteerEvent } from "@/lib/temporary_values";
 import { useState } from "react";
 
@@ -16,7 +16,7 @@ export const VolunteerHistory = () => {
 
   return (
     <div>
-      <EventTable onEditEvent={handleEditEvent} />
+      <VolunteerTable onEditEvent={handleEditEvent} />
     </div>
   );
 };
