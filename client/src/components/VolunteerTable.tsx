@@ -87,21 +87,21 @@ export const VolunteerTable: React.FC<VolunteerTableProps> = ({ onEditEvent }) =
                 return row.original.date.toLocaleDateString();
             }
         },
-        {
-            accessorKey: "volunteer",
-            header: ({ column }) => {
-                return (
-                    <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-                        Volunteer
-                        <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </Button>
-                )
-            },
-            sortingFn: customSortVolunteer,
-            cell: ({ row }) => {
-                return row.original.volunteer.name;
-            }
-        },
+        // {
+        //     accessorKey: "volunteer",
+        //     header: ({ column }) => {
+        //         return (
+        //             <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+        //                 Volunteer
+        //                 <ArrowUpDown className="ml-2 h-4 w-4" />
+        //             </Button>
+        //         )
+        //     },
+        //     sortingFn: customSortVolunteer,
+        //     cell: ({ row }) => {
+        //         return row.original.volunteer.name;
+        //     }
+        // },
     ]
 
     return (

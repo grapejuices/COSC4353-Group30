@@ -6,9 +6,9 @@ import { SignUpPage } from "./pages/SignUpPage";
 import { EveManagement } from "./pages/EventManagmentPage";
 import { VolunteerHistory } from "./pages/VolunteerHistoryTMP";
 import { VProfilePage } from "./pages/VProfilePage";
-import { VolunteerHistoryTMP } from "./pages/VolunteerHistoryTMP";
-import { AuthProvider } from "./AuthProvider"; 
-import ProtectedRoute from "./ProtectedRoute"; 
+// import { VolunteerHistoryTMP } from "./pages/VolunteerHistoryTMP";
+// import { AuthProvider } from "./AuthProvider"; 
+// import ProtectedRoute from "./ProtectedRoute"; 
 
 function App() {
   return (
