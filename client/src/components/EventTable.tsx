@@ -10,31 +10,40 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getEvents, urgencyLevels, VolunteerEvent } from "@/lib/temporary_values";
+import { Checkbox } from "@/components/ui/checkbox";
+import { createEvent, getEvents, urgencyLevels, VolunteerEvent, deleteEvent } from "@/lib/temporary_values";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { EventSheet } from "./EventForm";
 
 interface EventTableProps {
     onEditEvent: (event: VolunteerEvent) => void;
+    refreshKey?: number;
 }
 
-export const EventTable: React.FC<EventTableProps> = ({ onEditEvent }) => {
+export const EventTable: React.FC<EventTableProps> = ({ onEditEvent, refreshKey = 0 }) => {
     const [data, setData] = useState<VolunteerEvent[]>([]);
+    const [allData, setAllData] = useState<VolunteerEvent[]>([]);
     const [loading, setLoading] = useState(true);
+    const [internalRefreshKey, setInternalRefreshKey] = useState(0);
+    const [hideCompleted, setHideCompleted] = useState(false);
+
+    const effectiveRefreshKey = refreshKey + internalRefreshKey;
 
     useEffect(() => {
         const fetchData = async () => {
             const result = await getEvents();
-            setData(result);
+            setAllData(result);
+            setData(hideCompleted ? result.filter(event => event.status !== "Completed") : result);
             setLoading(false);
         };
         fetchData();
-    }, []);
+    }, [hideCompleted, effectiveRefreshKey]);
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+    const refreshTable = () => {
+        setInternalRefreshKey(prevKey => prevKey + 1);
+    };
 
     // Custom sorting function for urgency
     const customSortUrgency = (rowA: any, rowB: any) => {
@@ -42,11 +51,29 @@ export const EventTable: React.FC<EventTableProps> = ({ onEditEvent }) => {
     };
 
     const customSortVolunteer = (rowA: any, rowB: any) => {
-        return rowA.original.volunteer.name.localeCompare(rowB.original.volunteer.name);
-    }
+        const volA = rowA.original.volunteer;
+        const volB = rowB.original.volunteer;
+
+        if (!volA && !volB) return 0;
+        if (!volA) return 1; // Null volunteers go last
+        if (!volB) return -1;
+
+        return volA.name.localeCompare(volB.name);
+    };
+
+    // Handle event deletion
+    const handleDeleteEvent = async (event: VolunteerEvent) => {
+        try {
+            await deleteEvent(event.id);
+            setData(prevData => prevData.filter(e => e.id !== event.id));
+            refreshTable();
+        } catch (error) {
+            console.error("Error deleting event:", error);
+        }
+    };
 
     // Define the columns of the table
-    const columns: ColumnDef<VolunteerEvent>[] = [
+    const columns: ColumnDef<VolunteerEvent>[] = useMemo(() => [
         {
             id: "actions",
             cell: ({ row }) => {
@@ -62,7 +89,7 @@ export const EventTable: React.FC<EventTableProps> = ({ onEditEvent }) => {
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => onEditEvent(row.original)}>Edit Event</DropdownMenuItem>
-                            <DropdownMenuItem>Delete Event</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDeleteEvent(row.original)}>Delete Event</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 );
@@ -130,15 +157,109 @@ export const EventTable: React.FC<EventTableProps> = ({ onEditEvent }) => {
             },
             sortingFn: customSortVolunteer,
             cell: ({ row }) => {
-                return row.original.volunteer.name;
+                // Standardize the text for consistency
+                return row.original.volunteer?.name || "No Volunteer Assigned";
             }
         },
-    ]
+    ], [onEditEvent]);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <div className="container mx-auto py-10">
-            <Button className="mb-4">Create Event</Button>
-            <DataTable columns={columns} data={data} />
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold">Events</h1>
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center space-x-2">
+                        <Checkbox
+                            id="hide-completed"
+                            checked={hideCompleted}
+                            onCheckedChange={(checked: any) => setHideCompleted(!!checked)}
+                        />
+                        <label
+                            htmlFor="hide-completed"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                            Hide Completed Events
+                        </label>
+                    </div>
+                    <CreateEventButton setData={setData} refreshTable={refreshTable} />
+                </div>
+            </div>
+            <DataTable
+                key={refreshKey}
+                columns={columns}
+                data={data}
+                pagination={false}
+            />
         </div>
-    )
+    );
+}
+
+// Create event button props
+interface CreateEventButtonProps {
+    setData: React.Dispatch<React.SetStateAction<VolunteerEvent[]>>;
+    refreshTable: () => void;
+}
+
+// Create a new event button
+const CreateEventButton: React.FC<CreateEventButtonProps> = ({ setData, refreshTable }) => {
+    const [selectedEvent, setSelectedEvent] = useState<VolunteerEvent | null>(null);
+
+    const handleSave = (savedEvent: VolunteerEvent) => {
+        // Update data in the table with saved event
+        setData(prevData => {
+            const updatedData = prevData.filter(event => event.id !== savedEvent.id);
+            updatedData.push(savedEvent);
+
+            // Force the table to refresh
+            setTimeout(refreshTable, 0);
+
+            return updatedData;
+        });
+    };
+
+    return (
+        <div>
+            <Button onClick={() => onCreateNewEvent(setSelectedEvent, setData, refreshTable)}>
+                Create Event
+            </Button>
+            <EventSheet
+                selectedEvent={selectedEvent}
+                closeSheet={() => setSelectedEvent(null)}
+                onSave={handleSave}
+            />
+        </div>
+    );
+}
+
+// Create a new event
+async function onCreateNewEvent(
+    setSelectedEvent: React.Dispatch<React.SetStateAction<VolunteerEvent | null>>,
+    setData: React.Dispatch<React.SetStateAction<VolunteerEvent[]>>,
+    refreshTable: () => void
+) {
+    // Create a new event
+    const newVolunteerEvent = await createEvent();
+    console.log("Created new event:", newVolunteerEvent);
+
+    // Set the selected event to the new event
+    setSelectedEvent(newVolunteerEvent);
+
+    // Update the data state to include the new event
+    setData(prevData => {
+        const updatedData = [...prevData];
+        // Remove any event with the same ID if it exists
+        const filteredData = updatedData.filter(event => event.id !== newVolunteerEvent.id);
+
+        // Add the new event
+        filteredData.push(newVolunteerEvent);
+
+        // Force the table to refresh
+        setTimeout(refreshTable, 0);
+
+        return filteredData;
+    });
 }
