@@ -7,13 +7,13 @@ import { EveManagement } from "./pages/EventManagmentPage";
 import { VolunteerHistory } from "./pages/VolunteerHistoryTMP";
 import { VProfilePage } from "./pages/VProfilePage";
 // import { VolunteerHistoryTMP } from "./pages/VolunteerHistoryTMP";
-// import { AuthProvider } from "./AuthProvider"; 
-// import ProtectedRoute from "./ProtectedRoute"; 
+import { AuthProvider } from "./AuthProvider"; 
+import ProtectedRoute from "./ProtectedRoute"; 
 
 function App() {
   return (
     <Router> 
-      {/* <AuthProvider>  */}
+      <AuthProvider> 
         <Navbar />
         <Routes>
           <Route path="/" element={<LoginPage />} />
@@ -21,26 +21,40 @@ function App() {
           <Route
             path="/event-management"
             element={
-              //<ProtectedRoute allowedRoles="admin">
+              <ProtectedRoute allowedRoles={["admin"]}>
                 <EveManagement />
-              //</ProtectedRoute>
+              </ProtectedRoute>
             }
           />
           <Route path="/volunteer-history-temp" element={<VolunteerHistory/>} />
           <Route
             path="/profile"
             element={
-              //<ProtectedRoute allowedRoles="volunteer">
+              <ProtectedRoute allowedRoles={["volunteer"]}>
                 <VProfilePage />
-              //</ProtectedRoute>
+              </ProtectedRoute>
             }
           />
-          <Route path="/vdashboard" element={<p>Volunteer Dashboard.</p>} />
-          <Route path="/adashboard" element={<p>Admin Dashboard.</p>} />
-          {/* <Route path="/vdashboard" element={<ProtectedRoute allowedRoles="volunteer"><p>Volunteer Dashboard.</p></ProtectedRoute>} /> */}
-          {/* <Route path="/adashboard" element={<ProtectedRoute allowedRoles="admin"><p>Admin Dashboard.</p></ProtectedRoute>} /> */}
+          {/* <Route path="/vdashboard" element={<p>Volunteer Dashboard.</p>} /> */}
+          {/* <Route path="/adashboard" element={<p>Admin Dashboard.</p>} /> */}
+          <Route 
+            path="/vdashboard" 
+            element={
+              <ProtectedRoute allowedRoles={["volunteer"]}>
+                <p>Volunteer Dashboard.</p>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/adashboard" 
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <p>Admin Dashboard.</p>
+              </ProtectedRoute>
+            } 
+          />
         </Routes>
-      {/* </AuthProvider> */}
+      </AuthProvider>
     </Router>
   );
 }

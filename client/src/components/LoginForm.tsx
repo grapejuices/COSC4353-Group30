@@ -5,10 +5,12 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
+import { useAuth } from "@/AuthProvider";
 
 export const LoginForm = () => {
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -38,6 +40,8 @@ export const LoginForm = () => {
         localStorage.setItem("access_token", response.data.access);
         localStorage.setItem("refresh_token", response.data.refresh);
         localStorage.setItem("isAdmin", response.data.is_admin);
+
+        login(response.data.access, response.data.refresh, response.data.is_admin);
 
         if (response.data.is_admin) {
           navigate('/adashboard');

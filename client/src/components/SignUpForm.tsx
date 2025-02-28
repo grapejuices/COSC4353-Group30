@@ -7,9 +7,11 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react"; // Import eye icons from Lucide React
+import { useAuth } from "@/AuthProvider";
 
 export const SignUpForm = () => {
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const [formData, setFormData] = useState({
         email: "",
@@ -94,6 +96,9 @@ export const SignUpForm = () => {
             console.log("Signup successful:", response.data);
             localStorage.setItem("access_token", response.data.access);
             localStorage.setItem("refresh_token", response.data.refresh);
+            localStorage.setItem("isAdmin", response.data.is_admin);
+
+            login(response.data.access, response.data.refresh, response.data.is_admin);
 
             if (response.data.user.is_admin) {
                 navigate("/adashboard");

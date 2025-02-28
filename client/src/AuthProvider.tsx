@@ -1,52 +1,49 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 interface AuthContextType {
-  user: any;
   isAdmin: boolean;
-  loading: boolean;
+  isAuth: boolean;
+  login: (token: string, refreshToken: string, isAdmin: boolean) => void;
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  isAdmin: false,
-  loading: true,
-  logout: () => {}
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); 
 
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      axios
-        .get("http://localhost:8000/profile/", { headers: { Authorization: `Bearer ${token}` } })
-        .then((response) => {
-          setUser(response.data);
-        })
-        .catch(() => {
-          localStorage.removeItem("access_token");
-          navigate("/");
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, [navigate]);
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
+    return localStorage.getItem("isAdmin") === "true";
+  });
+
+  const [isAuth, setIsAuth] = useState<boolean>(() => {
+    return !!localStorage.getItem("access_token");
+  });
+
+  const login = (token: string, refreshToken: string, isAdmin: boolean) => {
+    localStorage.setItem("access_token", token);
+    localStorage.setItem("refresh_token", refreshToken);
+    localStorage.setItem("isAdmin", isAdmin.toString());
+
+    setIsAuth(true);
+    setIsAdmin(isAdmin);
+  };
 
   const logout = () => {
     localStorage.removeItem("access_token");
-    setUser(null);
-    navigate("/");
-  };
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("isAdmin");
+
+    setIsAuth(false);
+    setIsAdmin(false);
+  }
+
+  useEffect(() => {
+    setIsAuth(!!localStorage.getItem("access_token"));
+    setIsAdmin(localStorage.getItem("isAdmin") === "true");
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAdmin: user?.is_admin || false, loading, logout }}>
+    <AuthContext.Provider value={{ isAdmin, isAuth, login, logout}} >
       {children}
     </AuthContext.Provider>
   );
@@ -55,7 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuth must be within a AuthProvider");
   }
   return context;
-};
+}

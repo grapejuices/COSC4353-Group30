@@ -12,9 +12,11 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { NotificationCenter } from "./NotificationSystem";
+import { useAuth } from "@/AuthProvider";
 
 export const Navbar = () => {
     const location = useLocation();
+    const { logout, isAdmin, isAuth } = useAuth();
 
     const isLoginPage = location.pathname === '/';
     const buttonText = isLoginPage ? "Sign Up" : "Login";
@@ -42,9 +44,22 @@ export const Navbar = () => {
                             </Popover>
                         </NavigationMenuItem>
                         <NavigationMenuItem>
-                            <Button asChild variant='outline' className='text-white border-white bg-black rounded'>
-                                <Link to={buttonLink}>{buttonText}</Link>
-                            </Button>
+                            {isAuth ? (
+                                <>
+                                    <Button asChild className="text-white border-white bg-black rounded">
+                                        <Link to={isAdmin ? '/adashboard' : 'vdashboard'}> 
+                                            Dashboard 
+                                        </Link>
+                                    </Button>
+                                    <Button asChild variant='outline' className="text-white border-white bg-black rounded" onClick={logout}>
+                                        <Link to="/">Logout</Link>
+                                    </Button>
+                                </>   
+                            ) : (
+                                <Button asChild variant='outline' className='text-white border-white bg-black rounded'>
+                                    <Link to={buttonLink}>{buttonText}</Link>
+                                </Button>
+                            )}
                         </NavigationMenuItem>
                     </NavigationMenuList>
                 </NavigationMenu>

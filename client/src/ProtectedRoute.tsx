@@ -2,21 +2,26 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 
 interface ProtectedRouteProps {
-    allowedRoles: "admin" | "volunteer";
+    allowedRoles: string[];
     children: React.ReactNode;
 }
 
 const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
-    const { user, isAdmin, loading } = useAuth();
+    const { isAdmin, isAuth } = useAuth();
 
-    if (loading) return <p>Loading...</p>; 
+    if (!isAuth) {
+        return <Navigate to="/" replace />;
+    }
 
-    if (!user) return <Navigate to="/" replace />; 
+    if (allowedRoles.includes("admin") && isAdmin) {
+        return <>{children}</>
+    }
 
-    if (allowedRoles === "admin" && !isAdmin) return <Navigate to="/vdashboard" replace />;
-    if (allowedRoles === "volunteer" && isAdmin) return <Navigate to="/adashboard" replace />;
+    if (allowedRoles.includes("volunteer") && !isAdmin) {
+        return <>{children}</>
+    }
 
-    return <>{children}</>;
+    return <Navigate to="/" replace />;
 };
 
 export default ProtectedRoute;

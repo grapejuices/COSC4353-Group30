@@ -26,7 +26,8 @@ class RegisterView(generics.CreateAPIView):
             {
                 "user": UserSerializer(user).data,
                 "refresh": str(refresh),
-                "access": str(refresh.access_token)
+                "access": str(refresh.access_token),
+                "is_admin": user.is_admin,
             },
             status=status.HTTP_201_CREATED,
         )
@@ -41,14 +42,11 @@ class LoginView(APIView):
 
         if user:
             refresh = RefreshToken.for_user(user)
-            user_profile = UserProfile.objects.filter(user=user).first()
-            
             
             return Response({
                 "refresh": str(refresh), 
                 "access": str(refresh.access_token),
                 "is_admin": user.is_admin,
-                "profile": UserProfileSerializer(user_profile).data if user_profile else None
             })
         return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
     
