@@ -265,7 +265,6 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet,
 
       <Label className="mt-4 text-lg">Assigned Volunteer</Label>
       <div>
-      // Update the volunteer section with consistent "No Volunteer Assigned" text
         {event.volunteer && event.volunteer.id !== "-1" ? (
           <div>
             <p className="text-sm text-muted-foreground"><b>Name:</b> {event.volunteer.name}</p>
