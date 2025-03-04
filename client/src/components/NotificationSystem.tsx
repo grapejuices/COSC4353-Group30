@@ -1,4 +1,5 @@
 "use client"
+// Import necessary icons and components
 import { Bell, Calendar, Info, Loader2, BadgeAlert } from "lucide-react"
 import { useEffect, useState } from "react"
 import {
@@ -6,16 +7,19 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert"
+// Import data models and functions
 import { VolunteerEvent, getEvents } from "@/lib/temporary_values"
 import * as React from "react"
+// Import Popover primitive from Radix UI for dropdown functionality
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-// Import Badge from the component we just created
 import { Badge } from "@/components/ui/badge"
 
+// Create re-usable Popover components
 const Popover = PopoverPrimitive.Root
 const PopoverTrigger = PopoverPrimitive.Trigger
+// Custom implementation of PopoverContent with styling
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
@@ -26,6 +30,7 @@ const PopoverContent = React.forwardRef<
       align={align}
       sideOffset={sideOffset}
       className={cn(
+        // Animation and style classes for the popover
         "z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
         className
       )}
@@ -35,32 +40,44 @@ const PopoverContent = React.forwardRef<
 ))
 PopoverContent.displayName = PopoverPrimitive.Content.displayName
 
+// Export the Popover components for reuse
 export { Popover, PopoverTrigger, PopoverContent }
 
+/**
+ * NotificationBell Component
+ * 
+ * A bell icon that displays the number of notifications and shows a popover with 
+ * notification details when clicked.
+ */
 export function NotificationBell() {
+  // State for event data
   const [events, setEvents] = useState<VolunteerEvent[]>([])
   const [upcomingEvents, setUpcomingEvents] = useState<VolunteerEvent[]>([])
+  // UI state management
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   
-  // Calculate the total number of notifications
+  // Calculate the total number of notifications to display as a badge
   const notificationCount = events.length + upcomingEvents.length
 
   // Fetch events when the component mounts
   useEffect(() => {
     const fetchEvents = async () => {
       try {
+        // Get all events from the database or temporary data
         const fetchedEvents = await getEvents()
         
         // Update the state with the fetched events
         setEvents(fetchedEvents)
         
-        // Filter for upcoming events (within the next 2 days)
+        // Filter for upcoming events (within the next 2 days) that need reminders
         const now = new Date()
         const twoDaysFromNow = new Date(now)
         twoDaysFromNow.setDate(now.getDate() + 2)
         
+        // Only show reminders for pending events that have a volunteer assigned
+        // and are happening within the next two days
         const upcoming = fetchedEvents.filter(event => {
           return event.status === "Pending" && 
                  event.volunteer && 
@@ -76,13 +93,15 @@ export function NotificationBell() {
       }
     }
     fetchEvents()
-  }, [])
+  }, []) // Empty dependency array ensures this runs only once on mount
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
+      {/* Bell icon trigger with notification count badge */}
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
+          {/* Only show the badge if there are notifications */}
           {notificationCount > 0 && (
             <div className="absolute -top-1 -right-1 rounded-full bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center">
               {notificationCount}
@@ -90,10 +109,13 @@ export function NotificationBell() {
           )}
         </Button>
       </PopoverTrigger>
+      {/* Notification popover content */}
       <PopoverContent className="w-80 max-h-[80vh] overflow-y-auto p-0">
+        {/* Header section */}
         <div className="p-4 border-b">
           <h3 className="font-medium">Notifications</h3>
         </div>
+        {/* Notification content */}
         <div className="p-2">
           <NotificationCenter 
             events={events} 
@@ -107,13 +129,22 @@ export function NotificationBell() {
   )
 }
 
+/**
+ * Interface for NotificationCenter props
+ */
 interface NotificationCenterProps {
-  events: VolunteerEvent[]
-  upcomingEvents: VolunteerEvent[]
-  loading: boolean
-  error: string | null
+  events: VolunteerEvent[]       // All events that need notifications
+  upcomingEvents: VolunteerEvent[] // Events that need reminders
+  loading: boolean               // Loading state while fetching data
+  error: string | null           // Error message if fetch fails
 }
 
+/**
+ * NotificationCenter Component
+ * 
+ * Displays notifications for various event types and statuses.
+ * Shows loading states, error messages, and empty states as needed.
+ */
 export function NotificationCenter({
   events = [],
   upcomingEvents = [],
@@ -149,12 +180,17 @@ export function NotificationCenter({
     )
   }
 
+  // Render the list of events based on their status
   return (
     <div className="space-y-2 max-h-[60vh] overflow-y-auto p-2">
+      {/* Map through all events and display appropriate notifications based on status */}
       {events.map((event) => {
+        // Check if the event is urgent (Critical or High urgency)
         const isUrgent = event.urgency === "Critical" || event.urgency === "High"
+        // Check if the event is pending
         const isPending = event.status === "Pending"
         
+        // Notification for new pending assignments
         if (isPending) {
           return (
             <Alert key={event.id} variant={isUrgent ? "destructive" : "default"}>
@@ -169,6 +205,7 @@ export function NotificationCenter({
           )
         }
 
+        // Notification for completed events
         if (event.status === "Completed") {
           return (
             <Alert key={event.id} variant="default">
@@ -181,6 +218,7 @@ export function NotificationCenter({
           )
         }
         
+        // Notification for cancelled events
         if (event.status === "Cancelled") {
           return (
             <Alert key={event.id} variant="destructive">
@@ -193,6 +231,7 @@ export function NotificationCenter({
           )
         }
         
+        // Notification for "No Show" events (volunteer didn't attend)
         if (event.status === "No Show") {
           return (
             <Alert key={event.id} variant="destructive">
@@ -206,10 +245,11 @@ export function NotificationCenter({
           )
         }
 
+        // Skip rendering for events that don't match any of the above statuses
         return null
       })}
       
-      {/* Event Reminders - Show for any upcoming events */}
+      {/* Event Reminders - Show for any upcoming events within the next two days */}
       {upcomingEvents.map((event) => (
         <Alert key={`reminder-${event.id}`} variant="default">
           <Calendar className="h-4 w-4" />
