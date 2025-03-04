@@ -1,5 +1,5 @@
 "use client"
-import { Bell, Calendar, Info, Loader2 } from "lucide-react"
+import { Bell, Calendar, Info, Loader2, BadgeAlert } from "lucide-react"
 import { useEffect, useState } from "react"
 import {
   Alert,
@@ -7,11 +7,12 @@ import {
   AlertTitle,
 } from "@/components/ui/alert"
 import { VolunteerEvent, getEvents } from "@/lib/temporary_values"
-"use client"
-
 import * as React from "react"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+// Import Badge from the component we just created
+import { Badge } from "@/components/ui/badge"
 
 const Popover = PopoverPrimitive.Root
 const PopoverTrigger = PopoverPrimitive.Trigger
@@ -36,37 +37,93 @@ PopoverContent.displayName = PopoverPrimitive.Content.displayName
 
 export { Popover, PopoverTrigger, PopoverContent }
 
-export function NotificationCenter() {
-  // State to store the list of events
+export function NotificationBell() {
   const [events, setEvents] = useState<VolunteerEvent[]>([])
-  // State to manage loading status
+  const [upcomingEvents, setUpcomingEvents] = useState<VolunteerEvent[]>([])
   const [loading, setLoading] = useState(true)
-  // State to handle errors during event fetching
   const [error, setError] = useState<string | null>(null)
+  const [isOpen, setIsOpen] = useState(false)
+  
+  // Calculate the total number of notifications
+  const notificationCount = events.length + upcomingEvents.length
 
   // Fetch events when the component mounts
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        // Fetch events from the API or local function
         const fetchedEvents = await getEvents()
+        
         // Update the state with the fetched events
         setEvents(fetchedEvents)
+        
+        // Filter for upcoming events (within the next 2 days)
+        const now = new Date()
+        const twoDaysFromNow = new Date(now)
+        twoDaysFromNow.setDate(now.getDate() + 2)
+        
+        const upcoming = fetchedEvents.filter(event => {
+          return event.status === "Pending" && 
+                 event.volunteer && 
+                 event.date > now && 
+                 event.date < twoDaysFromNow
+        })
+        
+        setUpcomingEvents(upcoming)
       } catch (err) {
-        // If an error occurs, set the error message
-        setError("Failed to fetch events. Please try again later.")
+        setError("Failed to fetch events")
       } finally {
-        // Set loading to false once the fetch operation is complete
         setLoading(false)
       }
     }
     fetchEvents()
-  }, []) // Empty dependency array ensures this runs only once on mount
+  }, [])
 
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell className="h-5 w-5" />
+          {notificationCount > 0 && (
+            <div className="absolute -top-1 -right-1 rounded-full bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center">
+              {notificationCount}
+            </div>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 max-h-[80vh] overflow-y-auto p-0">
+        <div className="p-4 border-b">
+          <h3 className="font-medium">Notifications</h3>
+        </div>
+        <div className="p-2">
+          <NotificationCenter 
+            events={events} 
+            upcomingEvents={upcomingEvents} 
+            loading={loading} 
+            error={error} 
+          />
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+interface NotificationCenterProps {
+  events: VolunteerEvent[]
+  upcomingEvents: VolunteerEvent[]
+  loading: boolean
+  error: string | null
+}
+
+export function NotificationCenter({
+  events = [],
+  upcomingEvents = [],
+  loading = false,
+  error = null
+}: NotificationCenterProps) {
   // Display a loading spinner while events are being fetched
   if (loading) {
     return (
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-center p-4">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     )
@@ -83,25 +140,21 @@ export function NotificationCenter() {
   }
 
   // Display a message if there are no events to show
-  if (events.length === 0) {
+  if (events.length === 0 && upcomingEvents.length === 0) {
     return (
-      <Alert>
-        <AlertTitle>No Notifications</AlertTitle>
-        <AlertDescription>You have no new notifications.</AlertDescription>
-      </Alert>
+      <div className="p-4 text-center text-muted-foreground">
+        <BadgeAlert className="mx-auto h-8 w-8 mb-2" />
+        <p>No new notifications</p>
+      </div>
     )
   }
 
-  // Render the list of events
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 max-h-[60vh] overflow-y-auto p-2">
       {events.map((event) => {
-        // Check if the event is urgent
         const isUrgent = event.urgency === "Critical" || event.urgency === "High"
-        // Check if the event is pending
         const isPending = event.status === "Pending"
         
-        // Render a notification for pending events
         if (isPending) {
           return (
             <Alert key={event.id} variant={isUrgent ? "destructive" : "default"}>
@@ -116,7 +169,6 @@ export function NotificationCenter() {
           )
         }
 
-        // Render a notification for completed events
         if (event.status === "Completed") {
           return (
             <Alert key={event.id} variant="default">
@@ -128,10 +180,47 @@ export function NotificationCenter() {
             </Alert>
           )
         }
+        
+        if (event.status === "Cancelled") {
+          return (
+            <Alert key={event.id} variant="destructive">
+              <Info className="h-4 w-4" />
+              <AlertTitle>Event Cancelled</AlertTitle>
+              <AlertDescription>
+                The event "{event.name}" scheduled for {event.date.toLocaleDateString()} has been cancelled.
+              </AlertDescription>
+            </Alert>
+          )
+        }
+        
+        if (event.status === "No Show") {
+          return (
+            <Alert key={event.id} variant="destructive">
+              <Info className="h-4 w-4" />
+              <AlertTitle>Missed Event</AlertTitle>
+              <AlertDescription>
+                You were marked as "No Show" for: {event.name}<br />
+                Date: {event.date.toLocaleDateString()}
+              </AlertDescription>
+            </Alert>
+          )
+        }
 
-        // Return null for events that don't match any status (e.g., "Cancelled")
         return null
       })}
+      
+      {/* Event Reminders - Show for any upcoming events */}
+      {upcomingEvents.map((event) => (
+        <Alert key={`reminder-${event.id}`} variant="default">
+          <Calendar className="h-4 w-4" />
+          <AlertTitle>Upcoming Event Reminder</AlertTitle>
+          <AlertDescription>
+            Don't forget your upcoming event: {event.name}<br />
+            Date: {event.date.toLocaleDateString()}<br />
+            Location: {event.location}
+          </AlertDescription>
+        </Alert>
+      ))}
     </div>
   )
 }
