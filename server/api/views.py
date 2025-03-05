@@ -24,7 +24,6 @@ class RegisterView(generics.CreateAPIView):
 
         return Response(
             {
-                "user": UserSerializer(user).data,
                 "refresh": str(refresh),
                 "access": str(refresh.access_token),
                 "is_admin": user.is_admin,
@@ -51,9 +50,15 @@ class LoginView(APIView):
         return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
     
 class UserProfileView(generics.RetrieveUpdateAPIView):
-    queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return self.request.user.profile
+    
+    def get(self, request):
+        profile = self.get_object()
+        serializer = self.serializer_class(profile)
+        if profile:
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({"error": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)

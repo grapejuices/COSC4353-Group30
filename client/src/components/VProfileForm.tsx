@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -13,15 +13,16 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import axios from "axios";
 
 export const VProfileForm = () => {
   const [formData, setFormData] = useState({
-    fullName: "",
+    full_name: "",
     address1: "",
     address2: "",
     city: "",
     state: "",
-    zipCode: "",
+    zip_code: "",
     preferences: "",
   });
 
@@ -126,6 +127,37 @@ export const VProfileForm = () => {
     alert("Profile updated successfully!");
   };
 
+  useEffect(() => {
+    const accessToken  = localStorage.getItem("access_token");
+    axios.get("http://localhost:8000/profile/", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then((response) => {
+      console.log(response.data);
+
+      const fetchedAvailability = response.data.availability?.dates
+        ? [new Date(response.data.availability.dates)]
+        : [];
+
+      setAvailability(fetchedAvailability);
+
+      setFormData({
+        full_name: response.data.full_name,
+        address1: response.data.address1,
+        address2: response.data.address2 || "",
+        city: response.data.city,
+        state: response.data.state,
+        zip_code: response.data.zip_code,
+        preferences: response.data.preferences,
+      });
+    })
+    .catch((error) => {
+      console.error("Profile fetch failed:", error);
+    })
+  }, []);
+
   return (
     <Card className="bg-black text-white border border-gray-700 w-full max-w-lg shadow-lg mt-10">
       <CardHeader>
@@ -138,7 +170,7 @@ export const VProfileForm = () => {
             <Input
               name="fullName"
               className="bg-gray-800 text-white border-gray-600 focus:ring-gray-500 mt-1"
-              value={formData.fullName}
+              value={formData.full_name}
               onChange={handleChange}
               required
               maxLength={50}
@@ -184,7 +216,7 @@ export const VProfileForm = () => {
             <Label>State:</Label>
             <Select onValueChange={handleStateChange}>
               <SelectTrigger className="bg-gray-800 text-white border-gray-600 focus:ring-gray-500 mt-1">
-                <SelectValue placeholder="Select State" />
+                <SelectValue>{states.find((s) => s.value === formData.state)?.label || "Select State"}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {states.map((state) => (
@@ -201,7 +233,7 @@ export const VProfileForm = () => {
             <Input
               name="zipCode"
               className="bg-gray-800 text-white border-gray-600 focus:ring-gray-500 mt-1"
-              value={formData.zipCode}
+              value={formData.zip_code}
               onChange={handleChange}
               required
               minLength={5}

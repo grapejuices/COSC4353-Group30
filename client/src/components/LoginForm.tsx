@@ -40,6 +40,7 @@ export const LoginForm = () => {
         localStorage.setItem("access_token", response.data.access);
         localStorage.setItem("refresh_token", response.data.refresh);
         localStorage.setItem("isAdmin", response.data.is_admin);
+        localStorage.setItem("userId", response.data.userId);
 
         login(response.data.access, response.data.refresh, response.data.is_admin);
 
