@@ -22,7 +22,14 @@ export const SignUpForm = () => {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [passwordStrength, setPasswordStrength] = useState("");
+    const [passwordRequirements, setPasswordRequirements] = useState({
+        length: false,
+        uppercase: false,
+        lowercase: false, 
+        number: false,
+        special: false,
+        isStrong: false
+    });
     const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,7 +38,7 @@ export const SignUpForm = () => {
 
         // Check password strength when the password field changes
         if (id === "password") {
-            setPasswordStrength(checkPasswordStrength(value));
+            checkPasswordStrength(value);
         }
     };
 
@@ -40,28 +47,20 @@ export const SignUpForm = () => {
     };
 
     const checkPasswordStrength = (password: string) => {
-        const minLength = 8;
-        const hasUpperCase = /[A-Z]/.test(password);
-        const hasLowerCase = /[a-z]/.test(password);
-        const hasNumbers = /\d/.test(password);
-        const hasSpecialChars = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-        if (password.length < minLength) {
-            return "Password must be at least 8 characters long.";
-        }
-        if (!hasUpperCase) {
-            return "Password must contain at least one uppercase letter.";
-        }
-        if (!hasLowerCase) {
-            return "Password must contain at least one lowercase letter.";
-        }
-        if (!hasNumbers) {
-            return "Password must contain at least one number.";
-        }
-        if (!hasSpecialChars) {
-            return "Password must contain at least one special character.";
-        }
-        return "Password is strong!";
+        const requirements = {
+            length: password.length >= 8,
+            uppercase: /[A-Z]/.test(password),
+            lowercase: /[a-z]/.test(password),
+            number: /\d/.test(password),
+            special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+        };
+        
+        const isStrong = Object.values(requirements).every(req => req);
+        
+        setPasswordRequirements({
+            ...requirements,
+            isStrong
+        });
     };
 
     const togglePasswordVisibility = () => {
@@ -80,8 +79,8 @@ export const SignUpForm = () => {
         }
 
         // Check if the password meets the strength requirements
-        if (passwordStrength !== "Password is strong!") {
-            setError(passwordStrength);
+        if (!passwordRequirements.isStrong) {
+            setError("Password doesn't meet all requirements.");
             setLoading(false);
             return;
         }
@@ -97,7 +96,6 @@ export const SignUpForm = () => {
             localStorage.setItem("access_token", response.data.access);
             localStorage.setItem("refresh_token", response.data.refresh);
             localStorage.setItem("isAdmin", response.data.is_admin);
-            localStorage.setItem("userId", response.data.userId);
 
             login(response.data.access, response.data.refresh, response.data.is_admin);
 
@@ -136,59 +134,81 @@ export const SignUpForm = () => {
                         />
                     </div>
 
-                    <div className="relative">
+                    <div>
                         <Label htmlFor="password" className="text-white">
                             Password
                         </Label>
-                        <Input
-                            id="password"
-                            type={showPassword ? "text" : "password"} // Toggle between text and password
-                            placeholder="Enter your password"
-                            className="mt-1 bg-gray-800 text-white border-gray-600 focus:ring-gray-500 pr-10"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                        />
-                        <button
-                            type="button"
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 mt-7"
-                            onClick={togglePasswordVisibility}
-                        >
-                            {showPassword ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
-                        </button>
-                        {passwordStrength && (
-                            <p
-                                className={`text-sm mt-1 ${
-                                    passwordStrength === "Password is strong!"
-                                        ? "text-green-500"
-                                        : "text-red-500"
-                                }`}
+                        <div className="relative">
+                            <Input
+                                id="password"
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Enter your password"
+                                className="mt-1 bg-gray-800 text-white border-gray-600 focus:ring-gray-500 pr-10"
+                                value={formData.password}
+                                onChange={handleChange}
+                                required
+                            />
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                                onClick={togglePasswordVisibility}
                             >
-                                {passwordStrength}
-                            </p>
+                                {showPassword ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
+                            </button>
+                        </div>
+                        
+                        {formData.password && (
+                            <div className="mt-2 text-sm">
+                                {passwordRequirements.isStrong ? (
+                                    <p className="text-green-500">Password is strong!</p>
+                                ) : (
+                                    <div>
+                                        <p className="text-amber-500 mb-1">Password requirements:</p>
+                                        <ul className="space-y-1">
+                                            <li className={passwordRequirements.length ? "text-green-500" : "text-red-500"}>
+                                                {passwordRequirements.length ? "✓" : "×"} At least 8 characters
+                                            </li>
+                                            <li className={passwordRequirements.uppercase ? "text-green-500" : "text-red-500"}>
+                                                {passwordRequirements.uppercase ? "✓" : "×"} At least one uppercase letter
+                                            </li>
+                                            <li className={passwordRequirements.lowercase ? "text-green-500" : "text-red-500"}>
+                                                {passwordRequirements.lowercase ? "✓" : "×"} At least one lowercase letter
+                                            </li>
+                                            <li className={passwordRequirements.number ? "text-green-500" : "text-red-500"}>
+                                                {passwordRequirements.number ? "✓" : "×"} At least one number
+                                            </li>
+                                            <li className={passwordRequirements.special ? "text-green-500" : "text-red-500"}>
+                                                {passwordRequirements.special ? "✓" : "×"} At least one special character
+                                            </li>
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
                         )}
                     </div>
 
-                    <div className="relative">
+                    <div>
                         <Label htmlFor="passwordC" className="text-white">
                             Confirm Password
                         </Label>
-                        <Input
-                            id="passwordC"
-                            type={showPassword ? "text" : "password"} // Toggle between text and password
-                            placeholder="Confirm your password"
-                            className="mt-1 bg-gray-800 text-white border-gray-600 focus:ring-gray-500 pr-10"
-                            value={formData.passwordC}
-                            onChange={handleChange}
-                            required
-                        />
-                        <button
-                            type="button"
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 mt-7"
-                            onClick={togglePasswordVisibility}
-                        >
-                            {showPassword ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
-                        </button>
+                        <div className="relative">
+                            <Input
+                                id="passwordC"
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Confirm your password"
+                                className="mt-1 bg-gray-800 text-white border-gray-600 focus:ring-gray-500 pr-10"
+                                value={formData.passwordC}
+                                onChange={handleChange}
+                                required
+                            />
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                                onClick={togglePasswordVisibility}
+                            >
+                                {showPassword ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="flex items-center justify-between bg-gray-800 p-2 rounded-md border border-gray-600">
