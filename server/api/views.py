@@ -5,8 +5,9 @@ from rest_framework import status, generics
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import UserProfile, User
-from .serializers import RegisterSerializer, UserSerializer, UserProfileSerializer
+from .models import UserProfile, User, UserAvailability, UserSkills
+from .serializers import RegisterSerializer, UserProfileSerializer, UserAvailabilitySerializer, UserSkillsSerializer
+from django.db import transaction
 
 # Create your views here.
 
@@ -54,6 +55,7 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
+        profile, created = UserProfile.objects.get_or_create(user=self.request.user)
         return self.request.user.profile
     
     def get(self, request):
@@ -62,3 +64,60 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         if profile:
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"error": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+class UserAvailabilityView(generics.ListCreateAPIView):
+    serializer_class = UserAvailabilitySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.request.user.profile.availabilities.all()
+    
+    def get(self, request):
+        availabilities = self.get_queryset()
+        serializer = self.serializer_class(availabilities, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    
+    def post(self, request):
+        user_profile = request.user.profile
+        availability_data = request.data
+
+        if not isinstance(availability_data, list):
+            return Response({"error": "Invalid format, expected a list."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        with transaction.atomic():
+            for entry in availability_data:
+                UserAvailability.objects.update_or_create(
+                    user_profile=user_profile,
+                    date=entry["date"]
+                )
+        
+        return Response({"message": "Availabilities updated successfully."}, status=status.HTTP_200_OK)
+    
+class UserSkillsView(generics.ListCreateAPIView):
+    serializer_class = UserSkillsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.request.user.profile.skills.all()
+    
+    def get(self, request):
+        skills = self.get_queryset()
+        serializer = self.serializer_class(skills, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        user_profile = request.user.profile
+        skills_data = request.data  # Expecting a list of skill names
+
+        if not isinstance(skills_data, list):
+            return Response({"error": "Invalid format, expected a list."}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            for skill_entry in skills_data:
+                UserSkills.objects.update_or_create(
+                    user_profile=user_profile,
+                    name=skill_entry["name"],
+                )
+
+        return Response({"message": "Skills updated successfully."}, status=status.HTTP_200_OK)

@@ -33,14 +33,7 @@ class User(AbstractUser):
     def __str__(self):
         return self.email
     
-
-class Skill(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-
-    def __str__(self):
-        return self.name
-
-
+    
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     full_name = models.CharField(max_length=50)
@@ -105,9 +98,21 @@ class UserProfile(models.Model):
     state = models.CharField(max_length=2,choices=STATE_CHOICES)
 
     zip_code = models.CharField(max_length=9)
-    skills = models.ManyToManyField(Skill)
     preferences = models.TextField(blank=True, null=True)
-    availability = models.JSONField()
 
     def __str__(self):
         return self.full_name
+    
+class UserAvailability(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="availabilities")
+    date = models.DateField()
+
+    def __str__(self):
+        return self.date
+    
+class UserSkills(models.Model):
+    name = models.CharField(max_length=50)
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="skills")
+
+    def __str__(self):
+        return self.name

@@ -99,7 +99,7 @@ export const SignUpForm = () => {
 
             login(response.data.access, response.data.refresh, response.data.is_admin);
 
-            if (response.data.user.is_admin) {
+            if (response.data.is_admin) {
                 navigate("/adashboard");
             } else {
                 navigate("/profile");

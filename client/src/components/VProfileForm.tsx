@@ -121,10 +121,57 @@ export const VProfileForm = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Profile Data:", formData);
-    alert("Profile updated successfully!");
+    const accessToken  = localStorage.getItem("access_token");
+
+    try {
+      console.log(formData);
+      const profileResponse = await axios.put(
+        "http://localhost:8000/profile/",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (availability.length > 0) {
+        const parsedAvail = availability.map((date) => ({ date: date.toISOString().split("T")[0] }));
+        console.log(parsedAvail);
+        await axios.post(
+          "http://localhost:8000/availabilities/",
+          availability.map((date) => ({ date: date.toISOString().split("T")[0] })),
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
+
+      if (skills.length > 0) {
+        await axios.post(
+          "http://localhost:8000/skills/",
+          skills.map((skill) => ({ name: skill })),
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
+
+      console.log("Profile updated:", profileResponse.data);
+      // console.log("Availability updated:", availabilityResponse.data);
+      // console.log("Skills updated:", skillsResponse.data);
+    } catch (error) {
+      console.error("Profile update failed:", error);
+    }
   };
 
   useEffect(() => {
@@ -137,25 +184,53 @@ export const VProfileForm = () => {
     .then((response) => {
       console.log(response.data);
 
-      const fetchedAvailability = response.data.availability?.dates
-        ? [new Date(response.data.availability.dates)]
-        : [];
-
-      setAvailability(fetchedAvailability);
-
       setFormData({
-        full_name: response.data.full_name,
-        address1: response.data.address1,
+        full_name: response.data.full_name || "",
+        address1: response.data.address1 || "",
         address2: response.data.address2 || "",
-        city: response.data.city,
-        state: response.data.state,
-        zip_code: response.data.zip_code,
-        preferences: response.data.preferences,
+        city: response.data.city || "",
+        state: response.data.state || "",
+        zip_code: response.data.zip_code || "",
+        preferences: response.data.preferences || "",
       });
     })
     .catch((error) => {
       console.error("Profile fetch failed:", error);
     })
+
+    axios.get("http://localhost:8000/availabilities/",{
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then((response) => {
+      console.log(response.data);
+
+      const parsedDates = response.data.map((item: { date: string }) => new Date(item.date));
+
+      setAvailability(parsedDates);
+    })
+    .catch((error) => {
+      console.error("Availabilities fetch failed:", error);
+    })
+
+    axios.get("http://localhost:8000/skills/",{
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then((response) => {
+      console.log(response.data);
+
+      const parsedSkills = response.data.map((item: { name: string }) => item.name);
+
+      setSkills(parsedSkills);
+    })
+    .catch((error) => {
+      console.error("Skills fetch failed:", error);
+    })
+
+
   }, []);
 
   return (
@@ -168,7 +243,7 @@ export const VProfileForm = () => {
           <div>
             <Label>Full Name:</Label>
             <Input
-              name="fullName"
+              name="full_name"
               className="bg-gray-800 text-white border-gray-600 focus:ring-gray-500 mt-1"
               value={formData.full_name}
               onChange={handleChange}
@@ -216,7 +291,7 @@ export const VProfileForm = () => {
             <Label>State:</Label>
             <Select onValueChange={handleStateChange}>
               <SelectTrigger className="bg-gray-800 text-white border-gray-600 focus:ring-gray-500 mt-1">
-                <SelectValue>{states.find((s) => s.value === formData.state)?.label || "Select State"}</SelectValue>
+                <SelectValue placeholder="Select State" />
               </SelectTrigger>
               <SelectContent>
                 {states.map((state) => (
@@ -231,7 +306,7 @@ export const VProfileForm = () => {
           <div>
             <Label>Zip Code:</Label>
             <Input
-              name="zipCode"
+              name="zip_code"
               className="bg-gray-800 text-white border-gray-600 focus:ring-gray-500 mt-1"
               value={formData.zip_code}
               onChange={handleChange}

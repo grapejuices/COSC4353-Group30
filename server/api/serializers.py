@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from .models import User, UserProfile, Skill
+from .models import User, UserProfile, UserAvailability, UserSkills
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -27,38 +27,30 @@ class RegisterSerializer(serializers.ModelSerializer):
             is_admin=validated_data.get("is_admin", False)
         )
         return user
-
-class SkillSerializer(serializers.ModelSerializer):
+class UserAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Skill
-        fields = '__all__'
+        model = UserAvailability
+        fields = ["date"]
+    
+    def create(self, validated_data):
+        user_profile = self.context["request"].user.profile
+        return UserAvailability.objects.create(user_profile=user_profile, **validated_data)
+
+class UserSkillsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserSkills
+        fields = ["name"]
+    
+    def create(self, validated_data):
+        user_profile = self.context["request"].user.profile
+        return UserSkills.objects.create(user_profile=user_profile, **validated_data)
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    skills = serializers.PrimaryKeyRelatedField(
-        queryset=Skill.objects.all(), many=True
-    )
-
     class Meta:
         model = UserProfile
         fields = "__all__"
-
-    def create(self, validated_data):
-        skills = validated_data.pop("skills", [])
-        user_profile = UserProfile.objects.create(**validated_data)
-        user_profile.skills.set(skills)
-        return user_profile
-    
-    def update(self, instance, validated_data):
-        skills = validated_data.pop("skills", None)
-        
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        instance.save()
-
-        if skills is not None:
-            instance.skills.set(skills)
-
-        return instance
-
+        extra_kwargs = {
+            "address2": {"required": False},
+            "user": {"required": False},
+        }
     
