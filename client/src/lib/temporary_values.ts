@@ -86,21 +86,21 @@ export const staticVolunteer = new Volunteer(
 // ------------------------------------------------------------------------------------------------
 // Helper functions
 // ------------------------------------------------------------------------------------------------
-const randomInt = (max: number) => {
+export const randomInt = (max: number) => {
   return Math.floor(Math.random() * max);
 }
 
-const randomSkills = () => {
+export const randomSkills = () => {
   const randomIndex = Math.floor(Math.random() * skills.length);
   return skills.slice(0, randomIndex);
 }
 
-const randomDate = () => {
+export const randomDate = () => {
   const randomDays = Math.floor(Math.random() * 10);
   return new Date(Date.now() + randomDays * 24 * 60 * 60 * 1000);
 }
 
-function randomZipCode(): string {
+export function randomZipCode(): string {
   return Math.floor(10000 + Math.random() * 90000).toString();
 }
 
@@ -209,11 +209,21 @@ export function getEventsLength(): number {
 
 // Fetch event by id
 export async function getEvent(id: string): Promise<VolunteerEvent> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(randomEvents.find(event => event.id === id) || new VolunteerEvent());
-    }, 1000);
-  });
+  const event = randomEvents.find(event => event.id === id);
+  if (event) {
+    return new VolunteerEvent(
+      event.status,
+      event.id,
+      event.name,
+      event.description,
+      event.location,
+      event.skills,
+      event.urgency,
+      event.date,
+      event.volunteer
+    );
+  }
+  return new VolunteerEvent();
 }
 
 // Save event
@@ -247,24 +257,19 @@ export async function saveEvent(event: VolunteerEvent): Promise<VolunteerEvent> 
 
 // Create new event
 export async function createEvent(): Promise<VolunteerEvent> {
-  const eventsLength = getEventsLength();
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const newEvent = {
-        status: "Pending",
-        id: eventsLength.toString(),
-        name: `Event ${eventsLength}`,
-        description: `Description for event ${eventsLength}`,
-        location: "", // Empty zip code for new events
-        skills: [],
-        urgency: "Low",
-        date: new Date(),
-        volunteer: null, // Set to null by default
-      };
-      randomEvents.push(newEvent);
-      resolve(newEvent);
-    }, 1000);
-  });
+  const newEvent = new VolunteerEvent(
+    'Pending',
+    (randomEvents.length + 1).toString(),
+    'New Event',
+    'New Description',
+    'New Location',
+    [],
+    'Medium',
+    new Date(),
+    null
+  );
+  randomEvents.push(newEvent);
+  return newEvent;
 }
 
 // Delete event
