@@ -8,7 +8,7 @@ import {
   AlertTitle,
 } from "@/components/ui/alert"
 // Import data models and functions
-import { VolunteerEvent, getEvents } from "@/lib/temporary_values"
+import { VolunteerEvent, getEvents, updateEvent } from "@/lib/temporary_values"
 import * as React from "react"
 // Import Popover primitive from Radix UI for dropdown functionality
 import * as PopoverPrimitive from "@radix-ui/react-popover"
@@ -95,6 +95,56 @@ export function NotificationBell() {
     fetchEvents()
   }, []) // Empty dependency array ensures this runs only once on mount
 
+  // Function to handle event updates and send notifications
+  const handleEventUpdate = async (eventId: string, updatedFields: Partial<VolunteerEvent>) => {
+    try {
+      const updatedEvent = await updateEvent(eventId, updatedFields)
+      if (updatedEvent) {
+        // Send update notification
+        await sendNotification(updatedEvent, "update")
+        // Refresh the event list
+        const fetchedEvents = await getEvents()
+        setEvents(fetchedEvents)
+      }
+    } catch (err) {
+      setError("Failed to update event")
+    }
+  }
+
+  // Function to send notifications
+  const sendNotification = async (event: VolunteerEvent, type: "assignment" | "update" | "reminder") => {
+    const { volunteer, name, date, location } = event
+
+    if (!volunteer || !volunteer.email) {
+      console.error("No volunteer or email found for event:", event.id)
+      return
+    }
+
+    let subject = ""
+    let message = ""
+
+    switch (type) {
+      case "assignment":
+        subject = "New Event Assignment"
+        message = `You have been assigned to: ${name}\nDate: ${date.toLocaleDateString()}\nLocation: ${location}`
+        break
+      case "update":
+        subject = "Event Update"
+        message = `The event "${name}" has been updated.\nNew Date: ${date.toLocaleDateString()}\nNew Location: ${location}`
+        break
+      case "reminder":
+        subject = "Upcoming Event Reminder"
+        message = `Don't forget your upcoming event: ${name}\nDate: ${date.toLocaleDateString()}\nLocation: ${location}`
+        break
+      default:
+        console.error("Invalid notification type")
+        return
+    }
+
+    // Send email notification (mock implementation)
+    console.log(`Sending email to ${volunteer.email}: ${subject} - ${message}`)
+  }
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       {/* Bell icon trigger with notification count badge */}
@@ -122,6 +172,7 @@ export function NotificationBell() {
             upcomingEvents={upcomingEvents} 
             loading={loading} 
             error={error} 
+            onEventUpdate={handleEventUpdate}
           />
         </div>
       </PopoverContent>
@@ -137,6 +188,7 @@ interface NotificationCenterProps {
   upcomingEvents: VolunteerEvent[] // Events that need reminders
   loading: boolean               // Loading state while fetching data
   error: string | null           // Error message if fetch fails
+  onEventUpdate: (eventId: string, updatedFields: Partial<VolunteerEvent>) => void // Callback for event updates
 }
 
 /**
@@ -149,7 +201,8 @@ export function NotificationCenter({
   events = [],
   upcomingEvents = [],
   loading = false,
-  error = null
+  error = null,
+  onEventUpdate
 }: NotificationCenterProps) {
   // Display a loading spinner while events are being fetched
   if (loading) {
