@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
+import { BACKEND_URL } from "@/lib/config";
 
 export const VProfileForm = () => {
   const [formData, setFormData] = useState({
@@ -128,7 +129,7 @@ export const VProfileForm = () => {
     try {
       console.log(formData);
       const profileResponse = await axios.put(
-        "http://localhost:8000/profile/",
+        `${BACKEND_URL}/profile/`,
         formData,
         {
           headers: {
@@ -142,7 +143,7 @@ export const VProfileForm = () => {
         const parsedAvail = availability.map((date) => ({ date: date.toISOString().split("T")[0] }));
         console.log(parsedAvail);
         await axios.post(
-          "http://localhost:8000/availabilities/",
+          `${BACKEND_URL}/availabilities/`,
           availability.map((date) => ({ date: date.toISOString().split("T")[0] })),
           {
             headers: {
@@ -155,7 +156,7 @@ export const VProfileForm = () => {
 
       if (skills.length > 0) {
         await axios.post(
-          "http://localhost:8000/skills/",
+          `${BACKEND_URL}/skills/`,
           skills.map((skill) => ({ name: skill })),
           {
             headers: {
@@ -176,7 +177,7 @@ export const VProfileForm = () => {
 
   useEffect(() => {
     const accessToken  = localStorage.getItem("access_token");
-    axios.get("http://localhost:8000/profile/", {
+    axios.get(`${BACKEND_URL}/profile/`,{
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -198,7 +199,7 @@ export const VProfileForm = () => {
       console.error("Profile fetch failed:", error);
     })
 
-    axios.get("http://localhost:8000/availabilities/",{
+    axios.get(`${BACKEND_URL}/availabilities/`,{
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -214,7 +215,7 @@ export const VProfileForm = () => {
       console.error("Availabilities fetch failed:", error);
     })
 
-    axios.get("http://localhost:8000/skills/",{
+    axios.get(`${BACKEND_URL}/skills/`,{
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

@@ -1,0 +1,1 @@
+export const BACKEND_URL = `http://localhost:${import.meta.env.VITE_PORT || 1111}`;

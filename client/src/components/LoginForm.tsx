@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import { useAuth } from "@/AuthProvider";
+import { BACKEND_URL } from "@/lib/config";
 
 export const LoginForm = () => {
 
@@ -31,8 +32,8 @@ export const LoginForm = () => {
 
 
     try {
-        const response = await axios.post("http://localhost:8000/login/", {
-            email: formData.email,
+      const response = await axios.post(`${BACKEND_URL}/login/`, {
+        email: formData.email,
             password: formData.password,
         });
 

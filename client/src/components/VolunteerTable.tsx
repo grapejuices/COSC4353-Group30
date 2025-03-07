@@ -32,10 +32,6 @@ export const VolunteerTable: React.FC<VolunteerTableProps> = ({ onEditEvent }) =
         return urgencyLevels.indexOf(rowA.original.urgency) - urgencyLevels.indexOf(rowB.original.urgency);
     };
 
-    const customSortVolunteer = (rowA: any, rowB: any) => {
-        return rowA.original.volunteer.name.localeCompare(rowB.original.volunteer.name);
-    }
-
     const columns: ColumnDef<VolunteerEvent>[] = [
         {
             accessorKey: "status",

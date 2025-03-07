@@ -8,6 +8,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react"; // Import eye icons from Lucide React
 import { useAuth } from "@/AuthProvider";
+import { BACKEND_URL } from "@/lib/config";
 
 export const SignUpForm = () => {
     const navigate = useNavigate();
@@ -86,7 +87,7 @@ export const SignUpForm = () => {
         }
 
         try {
-            const response = await axios.post("http://localhost:8000/register/", {
+            const response = await axios.post(`${BACKEND_URL}/signup/`, {
                 email: formData.email,
                 password: formData.password,
                 is_admin: formData.isAdmin,
@@ -102,7 +103,7 @@ export const SignUpForm = () => {
             if (response.data.is_admin) {
                 navigate("/adashboard");
             } else {
-                navigate("/profile");
+                navigate("/vdashboard");
             }
         } catch (error) {
             console.error("Signup failed:", error);
