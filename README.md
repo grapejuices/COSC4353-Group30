@@ -49,14 +49,3 @@ When registering, the user will be prompted to input their email, username, and 
 
 ### Diagram for our database:
 ![Database](https://github.com/grapejuices/COSC4353-Group30/blob/master/Database.drawio.svg)
-
-## Group Members
-
-As a side note, we all worked on this assignment using various platforms, including (but not limited to) Discord, Google Drive, GitHub, and Draw.io. To ensure everyone gets the credit they deserve, we are including this little note here because everyone did their part. Each of us went back and fixed some of the mistakes that one another made, so it wouldn't be appropriate to attribute each person to one thing. 
-
-| Group Member Name   | What is your contribution?                       | Discussion Notes |
-|---------------------|--------------------------------------------------|------------------|
-| Talha A Mohammed    | A1  						 |    Read Above    |
-| Jonathan I Margolis | A1                                          	 |         ^        |
-| Quoc Hung Pham      | A1                                           	 |         ^        |
-| Mateus D Smith      | A1                                           	 |         ^        |
