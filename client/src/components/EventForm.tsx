@@ -32,6 +32,7 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet,
   const [statusValue, setStatusValue] = useState<{ value: string; label: string } | null>(null);
   const [urgencyValue, setUrgencyValue] = useState<{ value: string; label: string } | null>(null);
   const [skillsValue, setSkillsValue] = useState<Array<{ value: string; label: string }>>([]);
+  const [volunteerValue, setVolunteerValue] = useState<{ value: string; label: string } | null>(null);
 
   useEffect(() => {
     // Load volunteers
@@ -55,6 +56,9 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet,
       setStatusValue({ value: newEvent.status, label: newEvent.status });
       setUrgencyValue({ value: newEvent.urgency, label: newEvent.urgency });
       setSkillsValue(newEvent.skills.map(skill => ({ value: skill, label: skill })));
+      if (newEvent.volunteer) {
+        setVolunteerValue({ value: newEvent.volunteer.id, label: newEvent.volunteer.name });
+      }
     }
   }, [selectedEvent]);
 
@@ -122,20 +126,12 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet,
     }
   };
 
-  const handleAssignVolunteer = () => {
-    // Find best volunteer match and immediately assign it
-    if (bestMatch) {
-      setEvent({ ...event, volunteer: bestMatch });
-      setMatchAssigned(true);
-    } else {
-      // No best match found
-      alert("No suitable volunteer found. Please add volunteers with matching skills and availability.");
+  const handleChangeVolunteer = (selectedOption: any) => {
+    const selectedVolunteer = volunteers.find(vol => vol.id === selectedOption.value);
+    if (selectedVolunteer) {
+      setVolunteerValue(selectedOption);
+      setEvent({ ...event, volunteer: selectedVolunteer });
     }
-  };
-
-  const handleChangeVolunteer = () => {
-    // Simply reassign the best match
-    handleAssignVolunteer();
   };
 
   const handleSkillsChange = (selectedOptions: any) => {
@@ -264,37 +260,17 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet,
       </Popover>
 
       <Label className="mt-4 text-lg">Assigned Volunteer</Label>
-      <div>
-        {event.volunteer && event.volunteer.id !== "-1" ? (
-          <div>
-            <p className="text-sm text-muted-foreground"><b>Name:</b> {event.volunteer.name}</p>
-            <p className="text-sm text-muted-foreground"><b>Skills:</b> {event.volunteer.skills.join(", ")}</p>
-            <p className="text-sm text-muted-foreground"><b>Location:</b> {event.volunteer.zip}</p>
-            <p className="text-sm text-muted-foreground">
-              <b>Availability:</b> {event.volunteer.availability.map(date => format(date, "PPP")).join(", ")}
-            </p>
-            <Button
-              type="button"
-              variant={"outline"}
-              className="mt-2"
-              onClick={handleChangeVolunteer}
-            >
-              Change Volunteer
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">No Volunteer Assigned</p>
-            <Button
-              type="button"
-              variant={"outline"}
-              onClick={handleAssignVolunteer}
-            >
-              Find Best Match
-            </Button>
-          </div>
-        )}
-      </div>
+      <Select
+        value={volunteerValue}
+        onChange={handleChangeVolunteer}
+        options={volunteers
+          .filter(vol => vol.id !== "-1") // Filter out the "No Volunteer Assigned" option
+          .map(vol => ({
+            value: vol.id,
+            label: `${vol.name} - Skills: ${vol.skills.join(", ")} - Location: ${vol.zip}`
+          }))}
+        className="w-full p-2 border rounded-md"
+      />
 
       <SheetFooter className="mt-4">
         <Button type="submit" disabled={saving}>
