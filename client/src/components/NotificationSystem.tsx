@@ -54,28 +54,55 @@ export function NotificationBell() {
       try {
         // Fetch events from the API or local function
         const fetchedEvents = await getEvents()
+        console.log("Fetched events:", fetchedEvents)
         
-        // Update the state with the fetched events
-        setEvents(fetchedEvents)
+        if (!fetchedEvents || fetchedEvents.length === 0) {
+          console.log("No events were returned from getEvents()")
+          setLoading(false)
+          return
+        }
+        
+        // Process events for notifications (any status except "Completed" that needs attention)
+        const notificationEvents = fetchedEvents.filter(event => {
+          // Make sure event dates are handled correctly
+          const eventDate = event.date instanceof Date ? event.date : new Date(event.date)
+          
+          // Include events with these statuses
+          const hasNotificationStatus = ["Pending", "Cancelled", "No Show"].includes(event.status)
+          console.log(`Event ${event.id}: ${event.name}, status=${event.status}, hasNotificationStatus=${hasNotificationStatus}`)
+          
+          return hasNotificationStatus
+        })
+        
+        console.log("Notification events:", notificationEvents)
+        setEvents(notificationEvents)
         
         // Filter for upcoming events (within the next 2 days)
         const now = new Date()
         const twoDaysFromNow = new Date(now)
         twoDaysFromNow.setDate(now.getDate() + 2)
+        console.log("Date range:", now, "to", twoDaysFromNow)
         
         const upcoming = fetchedEvents.filter(event => {
-          return event.status === "Pending" && 
-                 event.volunteer && 
-                 event.date > now && 
-                 event.date < twoDaysFromNow
+          // Ensure event.date is a Date object
+          const eventDate = event.date instanceof Date ? event.date : new Date(event.date)
+          
+          // Check if the event is within the date range and has valid status/volunteer
+          const isInRange = eventDate > now && eventDate < twoDaysFromNow
+          const isPending = event.status === "Pending"
+          const hasVolunteer = !!event.volunteer
+          
+          console.log(`Upcoming check - Event: ${event.name}, Date: ${eventDate}, isPending: ${isPending}, hasVolunteer: ${hasVolunteer}, isInRange: ${isInRange}`)
+          
+          return isPending && hasVolunteer && isInRange
         })
         
+        console.log("Upcoming events:", upcoming)
         setUpcomingEvents(upcoming)
       } catch (err) {
-        // If an error occurs, set the error message
+        console.error("Error fetching events:", err)
         setError("Failed to fetch events")
       } finally {
-        // Set loading to false once the fetch operation is complete
         setLoading(false)
       }
     }
@@ -133,12 +160,23 @@ export function NotificationCenter({
     )
   }
 
+  // Display error message if there was a problem fetching events
+  if (error) {
+    return (
+      <div className="p-4 text-center text-destructive">
+        <BadgeAlert className="mx-auto h-8 w-8 mb-2" />
+        <p>{error}</p>
+      </div>
+    )
+  }
+
   // Display a message if there are no events to show
   if (events.length === 0 && upcomingEvents.length === 0) {
     return (
       <div className="p-4 text-center text-muted-foreground">
         <BadgeAlert className="mx-auto h-8 w-8 mb-2" />
         <p>No new notifications</p>
+        <p className="text-xs mt-1">This could be because there are no events assigned to you, or all events have been completed.</p>
       </div>
     )
   }
@@ -160,7 +198,7 @@ export function NotificationCenter({
               <AlertTitle>New Event</AlertTitle>
               <AlertDescription>
                 You have been assigned to: {event.name}<br />
-                Date: {event.date.toLocaleDateString()}
+                Date: {event.date instanceof Date ? event.date.toLocaleDateString() : new Date(event.date).toLocaleDateString()}
               </AlertDescription>
             </Alert>
           )
@@ -185,7 +223,7 @@ export function NotificationCenter({
               <Info className="h-4 w-4" />
               <AlertTitle>Event Cancelled</AlertTitle>
               <AlertDescription>
-                The event "{event.name}" scheduled for {event.date.toLocaleDateString()} has been cancelled.
+                The event "{event.name}" scheduled for {event.date instanceof Date ? event.date.toLocaleDateString() : new Date(event.date).toLocaleDateString()} has been cancelled.
               </AlertDescription>
             </Alert>
           )
@@ -198,7 +236,7 @@ export function NotificationCenter({
               <AlertTitle>Missed Event</AlertTitle>
               <AlertDescription>
                 You were marked as "No Show" for: {event.name}<br />
-                Date: {event.date.toLocaleDateString()}
+                Date: {event.date instanceof Date ? event.date.toLocaleDateString() : new Date(event.date).toLocaleDateString()}
               </AlertDescription>
             </Alert>
           )
@@ -215,7 +253,7 @@ export function NotificationCenter({
           <AlertTitle>Upcoming Event Reminder</AlertTitle>
           <AlertDescription>
             Don't forget your upcoming event: {event.name}<br />
-            Date: {event.date.toLocaleDateString()}<br />
+            Date: {event.date instanceof Date ? event.date.toLocaleDateString() : new Date(event.date).toLocaleDateString()}<br />
             Location: {event.location}
           </AlertDescription>
         </Alert>
