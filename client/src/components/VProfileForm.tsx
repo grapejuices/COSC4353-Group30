@@ -15,6 +15,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import { BACKEND_URL } from "@/lib/config";
+import Multiselect from 'multiselect-react-dropdown';
 
 export const VProfileForm = () => {
   const [formData, setFormData] = useState({
@@ -319,27 +320,14 @@ export const VProfileForm = () => {
 
           <div>
             <Label>Skills:</Label>
-            <Select>
-              <SelectTrigger className="bg-gray-800 text-white border-gray-600 focus:ring-gray-500 mt-1">
-                <SelectValue placeholder="Select Skills" />
-              </SelectTrigger>
-              <SelectContent>
-                {skillOptions.map((skill) => (
-                  <SelectItem key={skill} value={skill} onClick={() => handleSkillsChange(skill)}>
-                    <input type="checkbox" checked={skills.includes(skill)} readOnly className="mr-2" />
-                    {skill}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              {skills.map((skill) => (
-                <span key={skill} className="bg-gray-700 text-white px-2 py-1 rounded">
-                  {skill}
-                </span>
-              ))}
-            </div>
+            <Multiselect
+              options={skillOptions.map((skill) => ({ name: skill}))}
+              selectedValues={skills.map((skill) => ({ name: skill}))}
+              onSelect={(selectedList) => setSkills(selectedList.map((item: { name: string; }) => item.name))}
+              onRemove={(selectedList) => setSkills(selectedList.map((item: { name: string; }) => item.name))}
+              displayValue="name"
+              className="bg-gray-800 text-black border-gray-600 focus:ring-gray-500 mt-1"
+            />
           </div>
 
           <div>
@@ -358,14 +346,21 @@ export const VProfileForm = () => {
             <DatePicker
               selected={null}
               onChange={(date) => handleAvailabilityChange(date)}
-              className="w-full p-2 border rounded-md bg-gray-800 text-white focus:ring-gray-500 mt-2"
               placeholderText="Select available dates"
+              highlightDates={availability}
+              className="w-full p-2 border rounded-md bg-gray-800 text-white focus:ring-gray-500 mt-2"
             />
-
+            
             <div className="mt-3 flex flex-wrap gap-2">
               {availability.map((date, index) => (
                 <span key={index} className="bg-gray-700 text-white px-2 py-1 rounded">
                   {date.toLocaleDateString()}
+                  <button
+                    className="ml-2 text-red-400"
+                    onClick={() => setAvailability(availability.filter((_,i) => i !== index))}
+                  >
+                    ✖
+                  </button>
                 </span>
               ))}
             </div>
