@@ -126,17 +126,6 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet,
     }
   };
 
-  const handleAssignVolunteer = () => {
-    // Find best volunteer match and immediately assign it
-    if (bestMatch) {
-      setEvent({ ...event, volunteer: bestMatch });
-      setMatchAssigned(true);
-    } else {
-      // No best match found
-      alert("No suitable volunteer found. Please add volunteers with matching skills and availability.");
-    }
-  };
-
   const handleChangeVolunteer = (selectedOption: any) => {
     const selectedVolunteer = volunteers.find(vol => vol.id === selectedOption.value);
     if (selectedVolunteer) {
