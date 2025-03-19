@@ -116,3 +116,31 @@ class UserSkills(models.Model):
 
     def __str__(self):
         return self.name
+    
+# EventDetails model
+class EventDetails(models.Model):
+    event_name = models.CharField(max_length=100)
+    description = models.TextField()
+    location = models.CharField(max_length=255)
+    urgency = models.IntegerField(help_text="Scale from 1 (low) to 5 (high)")
+    event_date = models.DateTimeField()
+
+    def __str__(self):
+        return self.event_name
+    
+# VolunteerHistory model - Many-to-Many relationship between UserProfile and EventDetails
+class VolunteerHistory(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="volunteer_history")
+    event = models.ForeignKey(EventDetails, on_delete=models.CASCADE, related_name="volunteers")
+    participation_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user_profile.full_name} - {self.event.event_name}"
+    
+# Relational Entity that links skills to events.
+class EventSkills(models.Model):
+    name = models.CharField(max_length=50)
+    event = models.ForeignKey(EventDetails, on_delete=models.CASCADE, related_name="required_skills")
+
+    def __str__(self):
+        return self.name

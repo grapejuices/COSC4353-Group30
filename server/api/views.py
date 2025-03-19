@@ -5,8 +5,8 @@ from rest_framework import status, generics
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import UserProfile, User, UserAvailability, UserSkills
-from .serializers import RegisterSerializer, UserProfileSerializer, UserAvailabilitySerializer, UserSkillsSerializer
+from .models import UserProfile, User, UserAvailability, UserSkills, EventDetails
+from .serializers import RegisterSerializer, UserProfileSerializer, UserAvailabilitySerializer, UserSkillsSerializer, EventDetailsSerializer
 from django.db import transaction
 
 # Create your views here.
@@ -121,3 +121,16 @@ class UserSkillsView(generics.ListCreateAPIView):
                 )
 
         return Response({"message": "Skills updated successfully."}, status=status.HTTP_200_OK)
+    
+class EventDetailsView(generics.RetrieveUpdateAPIView):
+    serializer_class = EventDetailsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return EventDetails.objects.all()
+    
+    def get(self, request, *args, **kwargs):
+        events = self.get_queryset()
+        serializer = self.serializer_class(events, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
