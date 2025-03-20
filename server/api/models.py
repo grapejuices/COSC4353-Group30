@@ -119,11 +119,13 @@ class UserSkills(models.Model):
     
 # EventDetails model
 class EventDetails(models.Model):
+    id = models.AutoField(primary_key=True)
     event_name = models.CharField(max_length=100)
     description = models.TextField()
     location = models.CharField(max_length=255)
     urgency = models.IntegerField(help_text="Scale from 1 (low) to 5 (high)")
     event_date = models.DateTimeField()
+    status = models.CharField(max_length=50, default="Pending")
 
     def __str__(self):
         return self.event_name
