@@ -59,7 +59,7 @@ class EventDetailsSerializer(serializers.ModelSerializer):
         model = EventDetails
         fields = "__all__"
 
-class EventSkillsSerializers(serializers.ModelSerializer):
+class EventSkillsSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventSkills
         fields = "__all__"

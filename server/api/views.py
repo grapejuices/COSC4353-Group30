@@ -5,8 +5,8 @@ from rest_framework import status, generics
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import UserProfile, User, UserAvailability, UserSkills, EventDetails
-from .serializers import RegisterSerializer, UserProfileSerializer, UserAvailabilitySerializer, UserSkillsSerializer, EventDetailsSerializer
+from .models import UserProfile, User, UserAvailability, UserSkills, EventDetails, EventSkills
+from .serializers import RegisterSerializer, UserProfileSerializer, UserAvailabilitySerializer, UserSkillsSerializer, EventDetailsSerializer, EventSkillsSerializer
 from django.db import transaction
 
 # Create your views here.
@@ -133,4 +133,33 @@ class EventDetailsView(generics.RetrieveUpdateAPIView):
         events = self.get_queryset()
         serializer = self.serializer_class(events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def post(self, request):
+        if not request.user.is_admin:
+            return Response({"error": "Only admins can create events"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        data = request.data.copy()
+        skills_data = data.pop('skills', [])
+        serializer = self.serializer_class(data=data)
 
+        if serializer.is_valid():
+            event = serializer.save()
+
+            for skill in skills_data:
+                EventSkills.objects.create(name=skill, event=event)
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class EventSkillsView(generics.ListCreateAPIView):
+    serializer_class = EventSkillsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return EventSkills.objects.all()
+    
+    def get(self, request, *args, **kwargs):
+        event_skills = self.get_queryset()
+        serializer = self.serializer_class(event_skills, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
