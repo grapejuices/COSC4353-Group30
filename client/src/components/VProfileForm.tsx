@@ -111,11 +111,11 @@ export const VProfileForm = () => {
 
   const [skills, setSkills] = useState<string[]>([]);
 
-  const handleSkillsChange = (skill: string) => {
-    setSkills((prev) =>
-      prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
-    );
-  };
+  // const handleSkillsChange = (skill: string) => {
+  //   setSkills((prev) =>
+  //     prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
+  //   );
+  // };
 
   const handleAvailabilityChange = (date: Date | null) => {
     if (date && !availability.some((d) => d.toDateString() === date.toDateString())) {

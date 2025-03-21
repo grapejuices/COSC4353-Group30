@@ -125,7 +125,6 @@ class EventDetails(models.Model):
     location = models.CharField(max_length=100)
     urgency = models.CharField(max_length=100)
     event_date = models.DateTimeField()
-    status = models.CharField(max_length=100)
 
     def __str__(self):
         return self.event_name
@@ -134,7 +133,7 @@ class EventDetails(models.Model):
 class VolunteerHistory(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="volunteer_history")
     event = models.ForeignKey(EventDetails, on_delete=models.CASCADE, related_name="volunteers")
-    participation_date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=100, default="Pending")
 
     def __str__(self):
         return f"{self.user_profile.full_name} - {self.event.event_name}"

@@ -44,7 +44,7 @@ export const EventsPage = () => {
         location: "",
         urgency: "Low",
         event_date: "",
-        status: "Pending",
+        // status: "Pending",
         skills: [] as string[],
     });
 
@@ -108,7 +108,7 @@ export const EventsPage = () => {
                     location: event.location,
                     urgency: event.urgency,
                     event_date: new Date(event.event_date).toISOString().split("T")[0],
-                    status: event.status,
+                    // status: event.status,
                     skills: event.required_skills.map((skill) => skill.name),
                 });
             }
@@ -146,7 +146,7 @@ export const EventsPage = () => {
                                     <TableHead>Name</TableHead>
                                     <TableHead>Location</TableHead>
                                     <TableHead>Date</TableHead>
-                                    <TableHead>Status</TableHead>
+                                    {/* <TableHead>Status</TableHead> */}
                                     <TableHead>Urgency</TableHead>
                                     <TableHead>Required Skills</TableHead>
                                 </TableRow>
@@ -158,9 +158,9 @@ export const EventsPage = () => {
                                         <TableCell>{event.event_name}</TableCell>
                                         <TableCell>{event.location}</TableCell>
                                         <TableCell>{new Date(event.event_date).toLocaleString()}</TableCell>
-                                        <TableCell>
+                                        {/* <TableCell>
                                             <Badge variant="outline">{event.status}</Badge>
-                                        </TableCell>
+                                        </TableCell> */}
                                         <TableCell>{event.urgency}</TableCell>
                                         <TableCell>
                                             <div className="flex flex-wrap gap-1">
@@ -223,7 +223,7 @@ export const EventsPage = () => {
                                 value={formData.event_date}
                                 onChange={handleChange}
                             />
-                            <ShadSelect onValueChange={(value) => handleSelectChange("status", value)}>
+                            {/* <ShadSelect onValueChange={(value) => handleSelectChange("status", value)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Status" />
                                 </SelectTrigger>
@@ -232,7 +232,7 @@ export const EventsPage = () => {
                                     <SelectItem value="Approved">Approved</SelectItem>
                                     <SelectItem value="Completed">Completed</SelectItem>
                                 </SelectContent>
-                            </ShadSelect>
+                            </ShadSelect> */}
 
                             <Select
                                 isMulti

@@ -5,8 +5,8 @@ from rest_framework import status, generics
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import UserProfile, User, UserAvailability, UserSkills, EventDetails, EventSkills
-from .serializers import RegisterSerializer, UserProfileSerializer, UserAvailabilitySerializer, UserSkillsSerializer, EventDetailsSerializer, EventSkillsSerializer
+from .models import UserProfile, User, UserAvailability, UserSkills, EventDetails, EventSkills, VolunteerHistory
+from .serializers import RegisterSerializer, UserProfileSerializer, UserAvailabilitySerializer, UserSkillsSerializer, EventDetailsSerializer, EventSkillsSerializer, VolunteerHistorySerializer
 from django.db import transaction
 
 # Create your views here.
@@ -162,6 +162,18 @@ class UserHistoryDetailView(generics.RetrieveAPIView):
             serializer = self.serializer_class(profile)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"error": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+class VolunteerHistoryView(generics.RetrieveAPIView):
+    serializer_class = VolunteerHistorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.request.user.profile.volunteer_history.all()
+    
+    def get(self, request):
+        events = self.get_queryset()
+        serializer = self.serializer_class(events, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class EventDetailsView(generics.RetrieveUpdateAPIView):
     serializer_class = EventDetailsSerializer
