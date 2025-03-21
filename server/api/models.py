@@ -122,10 +122,10 @@ class EventDetails(models.Model):
     id = models.AutoField(primary_key=True)
     event_name = models.CharField(max_length=100)
     description = models.TextField()
-    location = models.CharField(max_length=255)
-    urgency = models.IntegerField(help_text="0 - Low, 1 - Medium, 2 - High, 3 - Critical")
+    location = models.CharField(max_length=100)
+    urgency = models.CharField(max_length=100)
     event_date = models.DateTimeField()
-    status = models.IntegerField(default=0, help_text="0 - Pending, 1 - Completed, 2 - Cancelled, 3 - In Progress")
+    status = models.CharField(max_length=100)
 
     def __str__(self):
         return self.event_name
