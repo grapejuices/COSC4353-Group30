@@ -174,6 +174,41 @@ class VolunteerHistoryView(generics.RetrieveAPIView):
         events = self.get_queryset()
         serializer = self.serializer_class(events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class VolunteerHistoryBulkCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        event_id = request.data.get("event")
+        user_profiles = request.data.get("user_profiles", [])
+
+        if not event_id or not isinstance(user_profiles, list):
+            return Response({"error": "Invalid payload. Must include event and user_profiles (array)."}, status=status.HTTP_400_BAD_REQUEST)
+
+        
+        try:
+            event = EventDetails.objects.get(id=event_id)
+        except EventDetails.DoesNotExist:
+            return Response({"error": "Event not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        created_histories = []
+        with transaction.atomic():
+            for profile_id in user_profiles:
+                try:
+                    profile = UserProfile.objects.get(id=profile_id)
+                except UserProfile.DoesNotExist:
+                    continue  
+
+                
+                history, created = VolunteerHistory.objects.update_or_create(
+                    user_profile=profile,
+                    event=event,
+                    defaults={"status": "Pending"}
+                )
+                created_histories.append(history)
+        
+        serializer = VolunteerHistorySerializer(created_histories, many=True)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class EventDetailsView(generics.RetrieveUpdateAPIView):
     serializer_class = EventDetailsSerializer

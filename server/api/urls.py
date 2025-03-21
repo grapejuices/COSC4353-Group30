@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views import RegisterView, LoginView, UserHistoryDetailView, UserProfileView, UserAvailabilityView, UserSkillsView, EventDetailsView, EventSkillsView, UsersListView, UserDetailView, EventDetailedView, VolunteerHistoryView
+from .views import RegisterView, LoginView, UserHistoryDetailView, UserProfileView, UserAvailabilityView, UserSkillsView, EventDetailsView, EventSkillsView, UsersListView, UserDetailView, EventDetailedView, VolunteerHistoryView, VolunteerHistoryBulkCreateView
 
 urlpatterns = [
     path("signup/", RegisterView.as_view(), name="signup"),
@@ -31,4 +31,5 @@ urlpatterns = [
     path("users/<int:pk>/", UserDetailView.as_view(), name="user"),
     path("history/<int:pk>/", UserHistoryDetailView.as_view(), name="history"),
     path("volunteer-history/", VolunteerHistoryView.as_view(), name="volunteer-history"),
+    path("volunteer-history/bulk-create/", VolunteerHistoryBulkCreateView.as_view(), name="volunteer-history-bulk-create"),
 ]

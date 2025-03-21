@@ -18,7 +18,7 @@ interface Event {
     location: string;
     urgency: string;
     event_date: string;
-    status: string;
+    // status: string; // Removed b/c not part of event model.
     required_skills: { name: string }[];
 }
 
@@ -30,12 +30,28 @@ const skillsOptions = [
     { value: "Driving", label: "Driving" },
 ];
 
+interface UserProfile {
+    id: number;
+    full_name: string;
+    // other fields if needed
+}
+  
+interface Option {
+    value: number;
+    label: string;
+}
+
 
 export const EventsPage = () => {
     const [events, setEvents] = useState<Event[]>([]);
+    const [volunteers, setVolunteers] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [open, setOpen] = useState<boolean>(false);
+
+    const [assignmentModalOpen, setAssignmentModalOpen] = useState<boolean>(false);
+    const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+    const [selectedVolunteerIds, setSelectedVolunteerIds] = useState<number[]>([]);
 
     const [formData, setFormData] = useState({
         id: 0,
@@ -64,8 +80,58 @@ export const EventsPage = () => {
             }
         };
 
+        const fetchVolunteers = async () => {
+            try {
+              const response = await axios.get("http://localhost:1111/users/", {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                },
+              });
+              setVolunteers(response.data);
+            } catch (err) {
+              console.error("Failed to fetch volunteers");
+            }
+        };
+
         fetchEvents();
+        fetchVolunteers();
     }, []);
+
+    const volunteerOptions: Option[] = volunteers.map((user) => ({
+        value: user.id,
+        label: user.full_name || `User ${user.id}`,
+    }));
+
+    const handleVolunteerChange = (selected: MultiValue<Option>) => {
+        setSelectedVolunteerIds(selected.map((opt) => opt.value));
+    };
+
+    const handleAssignmentSubmit = async () => {
+        if (!selectedEvent || selectedVolunteerIds.length === 0) {
+          alert("Please select an event and at least one volunteer.");
+          return;
+        }
+        const payload = {
+          event: selectedEvent.id,
+          user_profiles: selectedVolunteerIds,
+        };
+        console.log(payload);
+    
+        try {
+          await axios.post("http://localhost:1111/volunteer-history/bulk-create/", payload, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+              "Content-Type": "application/json",
+            },
+          });
+            alert("Volunteers assigned successfully!");
+            setAssignmentModalOpen(false);
+            
+        } catch (error) {
+            console.error("Volunteer assignment failed:", error);
+            alert("Assignment failed.");
+        }
+    };
 
     const handleSubmit = async () => {
         try {
@@ -149,6 +215,7 @@ export const EventsPage = () => {
                                     {/* <TableHead>Status</TableHead> */}
                                     <TableHead>Urgency</TableHead>
                                     <TableHead>Required Skills</TableHead>
+                                    <TableHead>Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -175,12 +242,40 @@ export const EventsPage = () => {
                                                 )}
                                             </div>
                                         </TableCell>
+                                        <TableCell>
+                                            <Button size="sm" onClick={() => {
+                                                setSelectedEvent(event);
+                                                setAssignmentModalOpen(true);
+                                            }}
+                                            >
+                                                Assign Volunteers
+                                            </Button>
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
                     </CardContent>
                 </Card>
+
+                <Dialog open={assignmentModalOpen} onOpenChange={setAssignmentModalOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Assign Volunteers to {selectedEvent?.event_name}</DialogTitle>
+                        </DialogHeader>
+                        <div className="mt-4">
+                            <Select
+                                isMulti
+                                options={volunteerOptions}
+                                onChange={handleVolunteerChange}
+                                placeholder="Select volunteers..."
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button onClick={handleAssignmentSubmit}>Assign</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
 
                 <Dialog open={open} onOpenChange={setOpen}>
                     <DialogContent>
