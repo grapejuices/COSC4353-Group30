@@ -53,14 +53,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "address2": {"required": False},
             "user": {"required": False},
         }
-        
-class EventDetailsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EventDetails
-        fields = "__all__"
 
 class EventSkillsSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventSkills
+        fields = "__all__"
+
+class EventDetailsSerializer(serializers.ModelSerializer):
+    required_skills = EventSkillsSerializer(many=True, read_only=True)
+    class Meta:
+        model = EventDetails
         fields = "__all__"
     

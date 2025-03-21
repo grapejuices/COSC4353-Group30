@@ -6,6 +6,7 @@ import { SignUpPage } from "./pages/SignUpPage";
 import { EveManagement } from "./pages/EventManagmentPage";
 import { VolunteerHistory } from "./pages/VolunteerHistoryTMP";
 import { VProfilePage } from "./pages/VProfilePage";
+import { EventsPage } from "./pages/EventsPage";
 // import { VolunteerHistoryTMP } from "./pages/VolunteerHistoryTMP";
 import { AuthProvider } from "./AuthProvider";
 import ProtectedRoute from "./ProtectedRoute";
@@ -39,7 +40,8 @@ function App() {
             path="/adashboard"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <EveManagement />
+                {/* <EveManagement /> */}
+                <EventsPage />
               </ProtectedRoute>
             }
           />
