@@ -9,10 +9,11 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert"
-import { VolunteerEvent, getEvents } from "@/lib/temporary_values"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { getEvents } from "@/lib/eventFunctions"
+import { VolunteerEvent } from "@/lib/types"
 
 const Popover = PopoverPrimitive.Root
 const PopoverTrigger = PopoverPrimitive.Trigger

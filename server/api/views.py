@@ -64,7 +64,33 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         if profile:
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"error": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class UsersListView(generics.ListAPIView):
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return UserProfile.objects.all()
     
+    def get(self, request):
+        profiles = self.get_queryset()
+        serializer = self.serializer_class(profiles, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class UserDetailView(generics.RetrieveAPIView):
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return UserProfile.objects.all()
+    
+    def get(self, request, pk):
+        profile = self.get_queryset().filter(user_id=pk).first()
+        if profile:
+            serializer = self.serializer_class(profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({"error": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
 class UserAvailabilityView(generics.ListCreateAPIView):
     serializer_class = UserAvailabilitySerializer
     permission_classes = [IsAuthenticated]
@@ -141,6 +167,9 @@ class EventDetailsView(generics.RetrieveUpdateAPIView):
         data = request.data.copy()
         skills_data = data.pop('skills', [])
         serializer = self.serializer_class(data=data)
+
+        print(data)
+        print(skills_data)
 
         if serializer.is_valid():
             event = serializer.save()

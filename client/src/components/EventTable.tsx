@@ -11,20 +11,20 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
-import { createEvent, getEvents, urgencyLevels, VolunteerEvent, deleteEvent } from "@/lib/temporary_values";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import { EventSheet } from "./EventForm";
+import { createEvent, deleteEvent, getEvent, getEvents, urgencyLevels } from "@/lib/eventFunctions";
 
 interface EventTableProps {
-    onEditEvent: (event: VolunteerEvent) => void;
+    onEditEvent: (event: any) => void;
     refreshKey?: number;
 }
 
 export const EventTable: React.FC<EventTableProps> = ({ onEditEvent, refreshKey = 0 }) => {
-    const [data, setData] = useState<VolunteerEvent[]>([]);
-    const [allData, setAllData] = useState<VolunteerEvent[]>([]);
+    const [data, setData] = useState<any[]>([]);
+    const [allData, setAllData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [internalRefreshKey, setInternalRefreshKey] = useState(0);
     const [hideCompleted, setHideCompleted] = useState(false);
@@ -62,7 +62,7 @@ export const EventTable: React.FC<EventTableProps> = ({ onEditEvent, refreshKey 
     };
 
     // Handle event deletion
-    const handleDeleteEvent = async (event: VolunteerEvent) => {
+    const handleDeleteEvent = async (event: any) => {
         try {
             await deleteEvent(event.id);
             setData(prevData => prevData.filter(e => e.id !== event.id));
@@ -73,7 +73,7 @@ export const EventTable: React.FC<EventTableProps> = ({ onEditEvent, refreshKey 
     };
 
     // Define the columns of the table
-    const columns: ColumnDef<VolunteerEvent>[] = useMemo(() => [
+    const columns: ColumnDef<any>[] = useMemo(() => [
         {
             id: "actions",
             cell: ({ row }) => {
@@ -142,7 +142,7 @@ export const EventTable: React.FC<EventTableProps> = ({ onEditEvent, refreshKey 
                 )
             },
             cell: ({ row }) => {
-                return row.original.date.toLocaleDateString();
+                return new Date(row.original.event_date).toLocaleDateString();
             }
         },
         {
@@ -158,7 +158,7 @@ export const EventTable: React.FC<EventTableProps> = ({ onEditEvent, refreshKey 
             sortingFn: customSortVolunteer,
             cell: ({ row }) => {
                 // Standardize the text for consistency
-                return row.original.volunteer?.name || "No Volunteer Assigned";
+                return row.original.volunteer?.full_name || "No Volunteer Assigned";
             }
         },
     ], [onEditEvent]);
@@ -200,15 +200,15 @@ export const EventTable: React.FC<EventTableProps> = ({ onEditEvent, refreshKey 
 
 // Create event button props
 interface CreateEventButtonProps {
-    setData: React.Dispatch<React.SetStateAction<VolunteerEvent[]>>;
+    setData: React.Dispatch<React.SetStateAction<any[]>>;
     refreshTable: () => void;
 }
 
 // Create a new event button
 const CreateEventButton: React.FC<CreateEventButtonProps> = ({ setData, refreshTable }) => {
-    const [selectedEvent, setSelectedEvent] = useState<VolunteerEvent | null>(null);
+    const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
 
-    const handleSave = (savedEvent: VolunteerEvent) => {
+    const handleSave = (savedEvent: any) => {
         // Update data in the table with saved event
         setData(prevData => {
             const updatedData = prevData.filter(event => event.id !== savedEvent.id);
@@ -237,25 +237,34 @@ const CreateEventButton: React.FC<CreateEventButtonProps> = ({ setData, refreshT
 
 // Create a new event
 async function onCreateNewEvent(
-    setSelectedEvent: React.Dispatch<React.SetStateAction<VolunteerEvent | null>>,
-    setData: React.Dispatch<React.SetStateAction<VolunteerEvent[]>>,
+    setSelectedEvent: React.Dispatch<React.SetStateAction<any | null>>,
+    setData: React.Dispatch<React.SetStateAction<any[]>>,
     refreshTable: () => void
 ) {
     // Create a new event
-    const newVolunteerEvent = await createEvent();
-    console.log("Created new event:", newVolunteerEvent);
+    const newVolunteerEvent = {
+        event_name: "New Event",
+        description: "New Event Description",
+        location: "N/A",
+        skills: [],
+        urgency: 0,
+        event_date: new Date(),
+        status: 0,
+    }
+
+    let data = await createEvent(newVolunteerEvent);
 
     // Set the selected event to the new event
-    setSelectedEvent(newVolunteerEvent);
+    setSelectedEvent(data);
 
     // Update the data state to include the new event
     setData(prevData => {
         const updatedData = [...prevData];
         // Remove any event with the same ID if it exists
-        const filteredData = updatedData.filter(event => event.id !== newVolunteerEvent.id);
+        const filteredData = updatedData.filter(event => event.id !== data.id);
 
         // Add the new event
-        filteredData.push(newVolunteerEvent);
+        filteredData.push(data);
 
         // Force the table to refresh
         setTimeout(refreshTable, 0);

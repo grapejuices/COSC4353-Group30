@@ -2,7 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
-import { getEvents, urgencyLevels, VolunteerEvent } from "@/lib/temporary_values";
+import { getEvents, urgencyLevels } from "@/lib/eventFunctions";
+import { VolunteerEvent } from "@/lib/types";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { useEffect, useState } from "react";

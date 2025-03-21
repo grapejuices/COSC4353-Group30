@@ -4,27 +4,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { saveEvent, skills, getVolunteers, Volunteer } from "@/lib/temporary_values";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import Select from 'react-select';
-import { VolunteerEvent } from "@/lib/temporary_values";
 import { SheetFooter } from "./ui/sheet";
+import { getAllSkills, getVolunteers, updateEvent } from "@/lib/eventFunctions";
 
 interface EventFormProps {
-  selectedEvent: VolunteerEvent;
+  selectedEvent: any;
   closeSheet: () => void;
-  onSave?: (savedEvent: VolunteerEvent) => void;
+  onSave?: (savedEvent: any) => void;
 }
 
 export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet, onSave }) => {
-  const [event, setEvent] = useState<VolunteerEvent | null>(null);
+  const [event, setEvent] = useState<any | null>(null);
   const [saving, setSaving] = useState(false);
-  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
-  const [bestMatch, setBestMatch] = useState<Volunteer | null>(null);
+  const [volunteers, setVolunteers] = useState<any[]>([]);
+  const [bestMatch, setBestMatch] = useState<any | null>(null);
   const [matchAssigned, setMatchAssigned] = useState<boolean>(false);
   const [zipCodeError, setZipCodeError] = useState<string | null>(null);
 
@@ -35,29 +34,30 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet,
   const [volunteerValue, setVolunteerValue] = useState<{ value: string; label: string } | null>(null);
 
   useEffect(() => {
-    // Load volunteers
-    const loadVolunteers = async () => {
-      const result = await getVolunteers();
-      setVolunteers(result);
+    // Load volunteers and skills
+    const loadVolunteersAndSkills = async () => {
+      const [volunteersResult, skillsResult] = await Promise.all([getVolunteers(), getAllSkills()]);
+      setVolunteers(volunteersResult);
+      setSkillsValue(skillsResult.map(skill => ({ value: skill, label: skill })));
     };
-    loadVolunteers();
+    loadVolunteersAndSkills();
 
     // Create a deep copy of the selectedEvent to avoid reference issues
     if (selectedEvent) {
       const newEvent = {
         ...selectedEvent,
-        skills: [...selectedEvent.skills],
+        skills: [...(selectedEvent.skills || [])],
         volunteer: selectedEvent.volunteer ? { ...selectedEvent.volunteer } : null,
-        date: new Date(selectedEvent.date)
+        event_date: new Date(selectedEvent.event_date)
       };
       setEvent(newEvent);
 
       // Set initial values for dropdowns
       setStatusValue({ value: newEvent.status, label: newEvent.status });
       setUrgencyValue({ value: newEvent.urgency, label: newEvent.urgency });
-      setSkillsValue(newEvent.skills.map(skill => ({ value: skill, label: skill })));
+      setSkillsValue(newEvent.skills.map((skill: any) => ({ value: skill, label: skill })));
       if (newEvent.volunteer) {
-        setVolunteerValue({ value: newEvent.volunteer.id, label: newEvent.volunteer.name });
+        setVolunteerValue({ value: newEvent.volunteer.id, label: newEvent.volunteer.full_name });
       }
     }
   }, [selectedEvent]);
@@ -70,10 +70,10 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet,
 
       // If we previously assigned the best match, update with new best match
       if (matchAssigned && match) {
-        setEvent(prev => prev ? { ...prev, volunteer: match } : prev);
+        setEvent((prev: any) => prev ? { ...prev, volunteer: match } : prev);
       }
     }
-  }, [event?.skills, event?.date, event?.location, volunteers, matchAssigned]);
+  }, [event?.skills, event?.event_date, event?.location, volunteers, matchAssigned]);
 
   if (!event) {
     return <div>Loading...</div>;
@@ -99,16 +99,16 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet,
         ...event,
         skills: [...event.skills],
         volunteer: event.volunteer ? { ...event.volunteer } : null,
-        date: new Date(event.date)
+        event_date: new Date(event.event_date)
       };
 
       // Save the event using the saveEvent function
-      const savedEvent = await saveEvent(eventToSave);
-      console.log("Event saved successfully:", savedEvent);
+      await updateEvent(eventToSave);
+      console.log("Event saved successfully:", eventToSave);
 
       // Call onSave callback if provided
       if (onSave) {
-        onSave(savedEvent);
+        onSave(eventToSave);
       }
 
       // Close the sheet
@@ -120,9 +120,9 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet,
     }
   };
 
-  const handleDateChange = (date: Date | undefined) => {
-    if (date) {
-      setEvent({ ...event, date });
+  const handleDateChange = (event_date: Date | undefined) => {
+    if (event_date) {
+      setEvent({ ...event, event_date });
     }
   };
 
@@ -213,7 +213,7 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet,
         isMulti
         value={skillsValue}
         onChange={handleSkillsChange}
-        options={skills.map(skill => ({ value: skill, label: skill }))}
+        options={skillsValue}
         className="w-full p-2 border rounded-md"
       />
 
@@ -238,11 +238,11 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet,
             variant={"outline"}
             className={cn(
               "w-full pl-3 text-left font-normal",
-              !event.date && "text-muted-foreground"
+              !event.event_date && "text-muted-foreground"
             )}
           >
-            {event.date ? (
-              format(event.date, "PPP")
+            {event.event_date ? (
+              format(event.event_date, "PPP")
             ) : (
               <span>Pick a date</span>
             )}
@@ -252,7 +252,7 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet,
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             mode="single"
-            selected={event.date}
+            selected={event.event_date}
             onSelect={handleDateChange}
             initialFocus
           />
@@ -267,7 +267,7 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet,
           .filter(vol => vol.id !== "-1") // Filter out the "No Volunteer Assigned" option
           .map(vol => ({
             value: vol.id,
-            label: `${vol.name} - Skills: ${vol.skills.join(", ")} - Location: ${vol.zip}`
+            label: `${vol.full_name} - Skills: ${vol.skills.join(", ")} - Location: ${vol.zip_code}`
           }))}
         className="w-full p-2 border rounded-md"
       />
@@ -283,14 +283,14 @@ export const EventForm: React.FC<EventFormProps> = ({ selectedEvent, closeSheet,
 };
 
 // Function to find the best volunteer match based on skills, location, and availability
-function findBestVolunteerMatch(event: VolunteerEvent, volunteers: Volunteer[]): Volunteer | null {
+function findBestVolunteerMatch(event: any, volunteers: any[]): any | null {
   if (!volunteers.length) return null;
 
   // Filter out volunteers who aren't available on the event date
   const availableVolunteers = volunteers.filter(volunteer => {
-    return volunteer.availability.some(date => {
-      const availDate = new Date(date);
-      const eventDate = new Date(event.date);
+    return volunteer.availability.some((event_date: string | number | Date) => {
+      const availDate = new Date(event_date);
+      const eventDate = new Date(event.event_date);
       return availDate.toDateString() === eventDate.toDateString();
     });
   });
@@ -302,7 +302,7 @@ function findBestVolunteerMatch(event: VolunteerEvent, volunteers: Volunteer[]):
     let score = 0;
 
     // Skills matching (most important factor)
-    const matchedSkills = volunteer.skills.filter(skill =>
+    const matchedSkills = volunteer.skills.filter((skill: any) =>
       event.skills.includes(skill)
     );
 
@@ -314,13 +314,13 @@ function findBestVolunteerMatch(event: VolunteerEvent, volunteers: Volunteer[]):
 
     // Location proximity (using zip code)
     // Simple check: if zip codes match, add points
-    if (event.location && volunteer.zip) {
+    if (event.location && volunteer.zip_code) {
       // Exact match gets highest score
-      if (event.location === volunteer.zip) {
+      if (event.location === volunteer.zip_code) {
         score += 5;
       }
       // First 3 digits match (same general area)
-      else if (event.location.substring(0, 3) === volunteer.zip.substring(0, 3)) {
+      else if (event.location.substring(0, 3) === volunteer.zip_code.substring(0, 3)) {
         score += 3;
       }
     }
@@ -336,9 +336,9 @@ function findBestVolunteerMatch(event: VolunteerEvent, volunteers: Volunteer[]):
 }
 
 interface EventSheetProps {
-  selectedEvent: VolunteerEvent | null;
+  selectedEvent: any | null;
   closeSheet: () => void;
-  onSave?: (savedEvent: VolunteerEvent) => void;
+  onSave?: (savedEvent: any) => void;
 }
 
 export const EventSheet: React.FC<EventSheetProps> = ({ selectedEvent, closeSheet, onSave }) => {

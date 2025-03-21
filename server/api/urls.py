@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views import RegisterView, LoginView, UserProfileView, UserAvailabilityView, UserSkillsView, EventDetailsView, EventSkillsView
+from .views import RegisterView, LoginView, UserProfileView, UserAvailabilityView, UserSkillsView, EventDetailsView, EventSkillsView, UsersListView, UserDetailView
 
 urlpatterns = [
     path("signup/", RegisterView.as_view(), name="signup"),
@@ -25,5 +25,7 @@ urlpatterns = [
     path("availabilities/", UserAvailabilityView.as_view(), name="availabilities"),
     path("skills/", UserSkillsView.as_view(), name="skills"),
     path("events/", EventDetailsView.as_view(), name="events"),
-    path("event-skills/", EventSkillsView.as_view(), name="event-skills")
+    path("event-skills/", EventSkillsView.as_view(), name="event-skills"),
+    path("users/", UsersListView.as_view(), name="users"),
+    path("users/<int:pk>/", UserDetailView.as_view(), name="user"),
 ]
