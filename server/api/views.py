@@ -180,7 +180,55 @@ class EventDetailsView(generics.RetrieveUpdateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class EventDetailedView(generics.RetrieveUpdateAPIView):
+    serializer_class = EventDetailsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return EventDetails.objects.all()
     
+    def get(self, request, pk):
+        event = self.get_queryset().filter(pk=pk).first()
+        if event:
+            serializer = self.serializer_class(event)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({"error": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    def put(self, request, pk):
+        if not request.user.is_admin:
+            return Response({"error": "Only admins can update events"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        event = self.get_queryset().filter(pk=pk).first()
+        if event:
+            data = request.data.copy()
+            skills_data = data.pop('skills', [])
+            serializer = self.serializer_class(event, data=data)
+
+            if serializer.is_valid():
+                event = serializer.save()
+
+                try:
+                    for skill in skills_data:
+                        EventSkills.objects.create(name=skill, event=event)
+                except:
+                    pass
+
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, pk):
+        if not request.user.is_admin:
+            return Response({"error": "Only admins can delete events"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        event = self.get_queryset().filter(pk=pk).first()
+        if event:
+            event.delete()
+            return Response({"message": "Event deleted successfully."}, status=status.HTTP_200_OK)
+        return Response({"error": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
+
 class EventSkillsView(generics.ListCreateAPIView):
     serializer_class = EventSkillsSerializer
     permission_classes = [IsAuthenticated]
