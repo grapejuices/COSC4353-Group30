@@ -2,49 +2,93 @@
 
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
-import { getEvents, urgencyLevels } from "@/lib/eventFunctions";
-import { VolunteerEvent } from "@/lib/types";
+import { BACKEND_URL } from "@/lib/config";
 import { ColumnDef } from "@tanstack/react-table";
+import axios from "axios";
 import { ArrowUpDown } from "lucide-react";
 import { useEffect, useState } from "react";
 
+interface Event {
+    id: number;
+    event_name: string;
+    description: string;
+    location: string;
+    urgency: string;
+    event_date: string;
+    status: string;
+    required_skills: { name: string }[];
+}
+
 interface VolunteerTableProps {
-    onEditEvent: (event: VolunteerEvent) => void;
+    onEditEvent: (event: Event) => void;
 }
 
 export const VolunteerTable: React.FC<VolunteerTableProps> = ({ onEditEvent }) => {
-    const [data, setData] = useState<VolunteerEvent[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [events, setEvents] = useState<Event[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchData = async () => {
-            const result = await getEvents();
-            setData(result);
-            setLoading(false);
+        const accessToken  = localStorage.getItem("access_token");
+
+        const fetchEvents = async () => {
+            try {
+                axios.get(`${BACKEND_URL}/profile/`,{
+                    headers: {
+                      Authorization: `Bearer ${accessToken}`,
+                    },
+                  }).then((response) => {
+                    axios.get(`${BACKEND_URL}/history/${response.data.id}/`,{
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`,
+                            },
+                    }).then((response) => {
+                        console.log(response.data);
+
+
+                        // setEvents(response.data);
+                    setLoading(false);
+                    }).catch((error) => {
+                        console.error(error);
+                        setError((error as any).message);
+                        setLoading(false);
+                  });
+                }
+                ).catch((error) => {
+                    console.error(error);
+                    setError((error as any).message);
+                    setLoading(false);
+                }
+                );
+            } catch (error) {
+                console.error(error);
+                setError((error as any).message);
+                setLoading(false);
+            }
         };
-        fetchData();
-    }, []);
+        
+
+        fetchEvents();
+
+    }
+        , []);
 
     if (loading) {
         return <div>Loading...</div>;
     }
 
     const customSortUrgency = (rowA: any, rowB: any) => {
-        return urgencyLevels.indexOf(rowA.original.urgency) - urgencyLevels.indexOf(rowB.original.urgency);
+        return rowA.original.urgency.localeCompare(rowB.original.urgency);
     };
 
-    const columns: ColumnDef<VolunteerEvent>[] = [
+    const columns: ColumnDef<Event>[] = [
         {
             accessorKey: "status",
             header: "Status",
         },
         {
-            accessorKey: "id",
-            header: "ID",
-        },
-        {
-            accessorKey: "name",
-            header: "Name",
+            accessorKey: "event_name",
+            header: "Event Name",
         },
         {
             accessorKey: "description",
@@ -71,7 +115,7 @@ export const VolunteerTable: React.FC<VolunteerTableProps> = ({ onEditEvent }) =
             sortingFn: customSortUrgency,
         },
         {
-            accessorKey: "date",
+            accessorKey: "event_date",
             header: ({ column }) => {
                 return (
                     <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
@@ -81,29 +125,14 @@ export const VolunteerTable: React.FC<VolunteerTableProps> = ({ onEditEvent }) =
                 )
             },
             cell: ({ row }) => {
-                return row.original.date.toLocaleDateString();
+                return new Date(row.original.event_date).toLocaleDateString();
             }
         },
-        // {
-        //     accessorKey: "volunteer",
-        //     header: ({ column }) => {
-        //         return (
-        //             <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        //                 Volunteer
-        //                 <ArrowUpDown className="ml-2 h-4 w-4" />
-        //             </Button>
-        //         )
-        //     },
-        //     sortingFn: customSortVolunteer,
-        //     cell: ({ row }) => {
-        //         return row.original.volunteer.name;
-        //     }
-        // },
     ]
 
     return (
         <div className="container mx-auto py-10">
-            <DataTable columns={columns} data={data} />
+            <DataTable columns={columns} data={events} />
         </div>
     )
 }

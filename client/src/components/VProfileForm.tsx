@@ -184,8 +184,6 @@ export const VProfileForm = () => {
       },
     })
     .then((response) => {
-      console.log(response.data);
-
       setFormData({
         full_name: response.data.full_name || "",
         address1: response.data.address1 || "",
@@ -206,8 +204,6 @@ export const VProfileForm = () => {
       },
     })
     .then((response) => {
-      console.log(response.data);
-
       const parsedDates = response.data.map((item: { date: string }) => new Date(item.date));
 
       setAvailability(parsedDates);
@@ -222,8 +218,6 @@ export const VProfileForm = () => {
       },
     })
     .then((response) => {
-      console.log(response.data);
-
       const parsedSkills = response.data.map((item: { name: string }) => item.name);
 
       setSkills(parsedSkills);

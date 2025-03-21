@@ -64,4 +64,3 @@ class EventDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventDetails
         fields = "__all__"
-    
