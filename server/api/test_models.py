@@ -100,3 +100,4 @@ class EventSkillsTests(TestCase):
 
     def test_event_skills_str(self):
         self.assertEqual(str(self.skill), 'Python')
+
