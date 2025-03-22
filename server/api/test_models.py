@@ -75,6 +75,18 @@ class EventDetailsTests(TestCase):
     def test_event_details_str(self):
         self.assertEqual(str(self.event), 'Test Event')
 
+class EventSkillsTests(TestCase):
+    def setUp(self):
+        self.event = EventDetails.objects.create(event_name='Test Event', description='Test Description', location='Test Location', urgency=3, event_date='2023-01-01T00:00:00Z')
+        self.skill = EventSkills.objects.create(event=self.event, name='Python')
+
+    def test_event_skills_creation(self):
+        self.assertEqual(self.skill.name, 'Python')
+        self.assertEqual(self.skill.event.event_name, 'Test Event')
+
+    def test_event_skills_str(self):
+        self.assertEqual(str(self.skill), 'Python')
+
 class VolunteerHistoryTests(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(email='test@example.com', password='testpass123')
@@ -89,15 +101,20 @@ class VolunteerHistoryTests(TestCase):
     def test_volunteer_history_str(self):
         self.assertEqual(str(self.volunteer_history), 'Test User - Test Event')
 
-class EventSkillsTests(TestCase):
-    def setUp(self):
-        self.event = EventDetails.objects.create(event_name='Test Event', description='Test Description', location='Test Location', urgency=3, event_date='2023-01-01T00:00:00Z')
-        self.skill = EventSkills.objects.create(event=self.event, name='Python')
+    def test_volunteer_history_user_profile(self):
+        self.assertEqual(self.volunteer_history.user_profile.email, 'test@example.com')
 
-    def test_event_skills_creation(self):
-        self.assertEqual(self.skill.name, 'Python')
-        self.assertEqual(self.skill.event.event_name, 'Test Event')
+    def test_volunteer_history_event_details(self):
+        self.assertEqual(self.volunteer_history.event.description, 'Test Description')
+        self.assertEqual(self.volunteer_history.event.location, 'Test Location')
+        self.assertEqual(self.volunteer_history.event.urgency, 3)
+        self.assertEqual(self.volunteer_history.event.event_date, '2023-01-01T00:00:00Z')
 
-    def test_event_skills_str(self):
-        self.assertEqual(str(self.skill), 'Python')
+    def test_volunteer_history_status_default(self):
+        self.assertEqual(self.volunteer_history.status, 'Pending')
+
+    def test_volunteer_history_status_update(self):
+        self.volunteer_history.status = 'Completed'
+        self.volunteer_history.save()
+        self.assertEqual(self.volunteer_history.status, 'Completed')
 
