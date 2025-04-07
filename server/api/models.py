@@ -145,3 +145,10 @@ class EventSkills(models.Model):
 
     def __str__(self):
         return self.name
+
+class Notifications(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="notifications")
+    message = models.TextField()
+
+    def __str__(self):
+        return self.message

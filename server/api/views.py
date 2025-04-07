@@ -5,8 +5,8 @@ from rest_framework import status, generics
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import UserProfile, User, UserAvailability, UserSkills, EventDetails, EventSkills, VolunteerHistory
-from .serializers import RegisterSerializer, UserProfileSerializer, UserAvailabilitySerializer, UserSkillsSerializer, EventDetailsSerializer, EventSkillsSerializer, VolunteerHistorySerializer
+from .models import UserProfile, User, UserAvailability, UserSkills, EventDetails, EventSkills, VolunteerHistory, Notifications
+from .serializers import RegisterSerializer, UserProfileSerializer, UserAvailabilitySerializer, UserSkillsSerializer, EventDetailsSerializer, EventSkillsSerializer, VolunteerHistorySerializer, NotificationSerializer
 from django.db import transaction
 
 # Create your views here.
@@ -197,9 +197,13 @@ class VolunteerHistoryBulkCreateView(APIView):
                 try:
                     profile = UserProfile.objects.get(id=profile_id)
                 except UserProfile.DoesNotExist:
-                    continue  
+                    continue
 
-                
+                Notifications.objects.create(
+                    user_profile=profile,
+                    message=f"You have been assigned to Event '{event.event_name}' Please check the details."
+                )
+
                 history, created = VolunteerHistory.objects.update_or_create(
                     user_profile=profile,
                     event=event,
@@ -267,11 +271,15 @@ class EventDetailedView(generics.RetrieveUpdateAPIView):
             if serializer.is_valid():
                 event = serializer.save()
 
-                try:
-                    for skill in skills_data:
-                        EventSkills.objects.create(name=skill, event=event)
-                except:
-                    pass
+                EventSkills.objects.filter(event=event).exclude(name__in=skills_data).delete()
+                for skill in skills_data:
+                    EventSkills.objects.update_or_create(name=skill, event=event)
+
+                for volunteer in VolunteerHistory.objects.filter(event=event).all():
+                    Notifications.objects.create(
+                        user_profile=volunteer.user_profile,
+                        message=f"Event '{event.event_name}' has been updated. Please check the details."
+                    )
 
                 return Response(serializer.data, status=status.HTTP_200_OK)
             
@@ -299,3 +307,25 @@ class EventSkillsView(generics.ListCreateAPIView):
         event_skills = self.get_queryset()
         serializer = self.serializer_class(event_skills, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class NotificationsView(generics.ListAPIView):
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Notifications.objects.filter(user_profile=self.request.user.profile)
+    
+    def get(self, request):
+        notifications = self.get_queryset()
+        serializer = self.serializer_class(notifications, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def delete(self, request):
+        pk = request.data.get("id")
+        if not pk:
+            return Response({"error": "ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        notification = self.get_queryset().filter(pk=pk).first()
+        if notification:
+            notification.delete()
+            return Response({"message": "Notification deleted successfully"}, status=status.HTTP_200_OK)
+        return Response({"error": "Notification not found"}, status=status.HTTP_404_NOT_FOUND)

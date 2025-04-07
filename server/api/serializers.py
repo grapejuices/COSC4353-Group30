@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from .models import User, UserProfile, UserAvailability, UserSkills, EventDetails, EventSkills, VolunteerHistory
+from .models import User, UserProfile, UserAvailability, UserSkills, EventDetails, EventSkills, VolunteerHistory, Notifications
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -69,4 +69,9 @@ class VolunteerHistorySerializer(serializers.ModelSerializer):
     event = EventDetailsSerializer(read_only=True)
     class Meta:
         model = VolunteerHistory
+        fields = "__all__"
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notifications
         fields = "__all__"

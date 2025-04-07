@@ -70,6 +70,7 @@ export const EventsPage = () => {
                 const response = await axios.get("http://localhost:1111/events/", {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                        "Content-Type": "application/json",
                     },
                 });
                 setEvents(response.data);
@@ -89,7 +90,7 @@ export const EventsPage = () => {
               });
               setVolunteers(response.data);
             } catch (err) {
-              console.error("Failed to fetch volunteers");
+                console.error("Failed to fetch volunteers");
             }
         };
 
@@ -390,7 +391,7 @@ export const EventsPage = () => {
                                 value={formData.event_date}
                                 onChange={handleChange}
                             />
-                            <ShadSelect onValueChange={(value) => handleSelectChange("status", value)}>
+                            {/* <ShadSelect onValueChange={(value) => handleSelectChange("status", value)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Status" />
                                 </SelectTrigger>
@@ -399,7 +400,7 @@ export const EventsPage = () => {
                                     <SelectItem value="Approved">Approved</SelectItem>
                                     <SelectItem value="Completed">Completed</SelectItem>
                                 </SelectContent>
-                            </ShadSelect>
+                            </ShadSelect> */}
 
                             <Select
                                 isMulti
