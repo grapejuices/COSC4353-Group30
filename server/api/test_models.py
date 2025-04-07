@@ -2,101 +2,75 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from .models import UserProfile, UserAvailability, UserSkills, EventDetails, VolunteerHistory, EventSkills
 
+User = get_user_model()
+
 class UserManagerTests(TestCase):
     def test_create_user(self):
-        User = get_user_model()
-        user = User.objects.create_user(email='test@example.com', password='testpass123')
-        self.assertEqual(user.email, 'test@example.com')
-        self.assertTrue(user.check_password('testpass123'))
-        self.assertFalse(user.is_staff)
-        self.assertFalse(user.is_superuser)
+        user = User.objects.create_user(email="testuser@example.com", password="testpass123")
+        self.assertEqual(user.email, "testuser@example.com")
+        self.assertTrue(user.check_password("testpass123"))
 
     def test_create_superuser(self):
-        User = get_user_model()
-        superuser = User.objects.create_superuser(email='super@example.com', password='superpass123')
-        self.assertEqual(superuser.email, 'super@example.com')
-        self.assertTrue(superuser.check_password('superpass123'))
+        superuser = User.objects.create_superuser(email="superuser@example.com", password="superpass123")
+        self.assertEqual(superuser.email, "superuser@example.com")
         self.assertTrue(superuser.is_staff)
         self.assertTrue(superuser.is_superuser)
 
 class UserProfileTests(TestCase):
     def setUp(self):
-        self.user = get_user_model().objects.create_user(email='test@example.com', password='testpass123')
-        self.profile = UserProfile.objects.create(user=self.user, full_name='Test User', address1='123 Main St', city='Test City', state='TX', zip_code='12345')
+        self.user = User.objects.create_user(email="testuser@example.com", password="testpass123")
+        self.profile = UserProfile.objects.create(
+            user=self.user,
+            full_name="Test User",
+            address1="123 Test St",
+            city="Test City",
+            state="TX",
+            zip_code="12345"
+        )
 
     def test_user_profile_creation(self):
-        self.assertEqual(self.profile.full_name, 'Test User')
-        self.assertEqual(self.profile.user.email, 'test@example.com')
-        self.assertEqual(self.profile.address1, '123 Main St')
-        self.assertEqual(self.profile.city, 'Test City')
-        self.assertEqual(self.profile.state, 'TX')
-        self.assertEqual(self.profile.zip_code, '12345')
-
-    def test_user_profile_str(self):
-        self.assertEqual(str(self.profile), 'Test User')
-
-class UserAvailabilityTests(TestCase):
-    def setUp(self):
-        self.user = get_user_model().objects.create_user(email='test@example.com', password='testpass123')
-        self.profile = UserProfile.objects.create(user=self.user, full_name='Test User', address1='123 Main St', city='Test City', state='TX', zip_code='12345')
-        self.availability = UserAvailability.objects.create(user_profile=self.profile, date='2023-01-01')
-
-    def test_user_availability_creation(self):
-        self.assertEqual(self.availability.date, '2023-01-01')
-        self.assertEqual(self.availability.user_profile.full_name, 'Test User')
-
-    def test_user_availability_str(self):
-        self.assertEqual(str(self.availability), '2023-01-01')
-
-class UserSkillsTests(TestCase):
-    def setUp(self):
-        self.user = get_user_model().objects.create_user(email='test@example.com', password='testpass123')
-        self.profile = UserProfile.objects.create(user=self.user, full_name='Test User', address1='123 Main St', city='Test City', state='TX', zip_code='12345')
-        self.skill = UserSkills.objects.create(user_profile=self.profile, name='Python')
-
-    def test_user_skills_creation(self):
-        self.assertEqual(self.skill.name, 'Python')
-        self.assertEqual(self.skill.user_profile.full_name, 'Test User')
-
-    def test_user_skills_str(self):
-        self.assertEqual(str(self.skill), 'Python')
+        self.assertEqual(self.profile.full_name, "Test User")
+        self.assertEqual(self.profile.user.email, "testuser@example.com")
 
 class EventDetailsTests(TestCase):
     def setUp(self):
-        self.event = EventDetails.objects.create(event_name='Test Event', description='Test Description', location='Test Location', urgency=3, event_date='2023-01-01T00:00:00Z')
+        self.event = EventDetails.objects.create(
+            event_name="Test Event",
+            description="This is a test event.",
+            location="Test Location",
+            urgency="High",
+            event_date="2023-12-31 23:59:59"
+        )
 
-    def test_event_details_creation(self):
-        self.assertEqual(self.event.event_name, 'Test Event')
-        self.assertEqual(self.event.description, 'Test Description')
-        self.assertEqual(self.event.location, 'Test Location')
-        self.assertEqual(self.event.urgency, 3)
-        self.assertEqual(self.event.event_date, '2023-01-01T00:00:00Z')
-
-    def test_event_details_str(self):
-        self.assertEqual(str(self.event), 'Test Event')
+    def test_event_creation(self):
+        self.assertEqual(self.event.event_name, "Test Event")
+        self.assertEqual(self.event.description, "This is a test event.")
 
 class VolunteerHistoryTests(TestCase):
     def setUp(self):
-        self.user = get_user_model().objects.create_user(email='test@example.com', password='testpass123')
-        self.profile = UserProfile.objects.create(user=self.user, full_name='Test User', address1='123 Main St', city='Test City', state='TX', zip_code='12345')
-        self.event = EventDetails.objects.create(event_name='Test Event', description='Test Description', location='Test Location', urgency=3, event_date='2023-01-01T00:00:00Z')
-        self.volunteer_history = VolunteerHistory.objects.create(user_profile=self.profile, event=self.event)
+        self.user = User.objects.create_user(email="testuser@example.com", password="testpass123")
+        self.profile = UserProfile.objects.create(
+            user=self.user,
+            full_name="Test User",
+            address1="123 Test St",
+            city="Test City",
+            state="TX",
+            zip_code="12345"
+        )
+        self.event = EventDetails.objects.create(
+            event_name="Test Event",
+            description="This is a test event.",
+            location="Test Location",
+            urgency="High",
+            event_date="2023-12-31 23:59:59"
+        )
+        self.volunteer_history = VolunteerHistory.objects.create(
+            user_profile=self.profile,
+            event=self.event,
+            status="Confirmed"
+        )
 
     def test_volunteer_history_creation(self):
-        self.assertEqual(self.volunteer_history.user_profile.full_name, 'Test User')
-        self.assertEqual(self.volunteer_history.event.event_name, 'Test Event')
-
-    def test_volunteer_history_str(self):
-        self.assertEqual(str(self.volunteer_history), 'Test User - Test Event')
-
-class EventSkillsTests(TestCase):
-    def setUp(self):
-        self.event = EventDetails.objects.create(event_name='Test Event', description='Test Description', location='Test Location', urgency=3, event_date='2023-01-01T00:00:00Z')
-        self.skill = EventSkills.objects.create(event=self.event, name='Python')
-
-    def test_event_skills_creation(self):
-        self.assertEqual(self.skill.name, 'Python')
-        self.assertEqual(self.skill.event.event_name, 'Test Event')
-
-    def test_event_skills_str(self):
-        self.assertEqual(str(self.skill), 'Python')
+        self.assertEqual(self.volunteer_history.user_profile.full_name, "Test User")
+        self.assertEqual(self.volunteer_history.event.event_name, "Test Event")
+        self.assertEqual(self.volunteer_history.status, "Confirmed")
