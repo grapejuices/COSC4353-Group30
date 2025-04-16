@@ -85,7 +85,7 @@ class UserDetailView(generics.RetrieveAPIView):
         return UserProfile.objects.all()
     
     def get(self, request, pk):
-        profile = self.get_queryset().filter(user_id=pk).first()
+        profile = self.get_queryset().filter(id=pk).first()
         if profile:
             serializer = self.serializer_class(profile)
             return Response(serializer.data, status=status.HTTP_200_OK)

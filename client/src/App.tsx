@@ -12,6 +12,7 @@ import { AuthProvider } from "./AuthProvider";
 import ProtectedRoute from "./ProtectedRoute";
 import { BACKEND_URL } from "./lib/config";
 import { VolunteerHistoryPage } from "./pages/VolunteerHistoryPage";
+import { ExportToCSV, ExportToPDF } from "./lib/exportTo";
 
 function App() {
   console.log(`BACKEND_URL: ${BACKEND_URL}`);
@@ -28,8 +29,6 @@ function App() {
               <ProtectedRoute allowedRoles={["volunteer"]}>
                 <div style={{ display: 'flex', height: '100vh', padding: '20px' }}>
                   <div style={{ flex: 1, overflow: 'auto', paddingRight: '10px' }}>
-                    {/* <VolunteerHistory /> */}
-                    {/* <h1>Temp</h1> */}
                     <VolunteerHistoryPage />
                   </div>
                   <div style={{ flex: 1, overflow: 'auto', paddingLeft: '10px' }}>
@@ -43,7 +42,10 @@ function App() {
             path="/adashboard"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                {/* <EveManagement /> */}
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '10vh', padding: '20px' }}>
+                  <ExportToPDF />
+                  <ExportToCSV />
+                </div>
                 <EventsPage />
               </ProtectedRoute>
             }
