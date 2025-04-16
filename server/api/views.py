@@ -8,6 +8,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import UserProfile, User, UserAvailability, UserSkills, EventDetails, EventSkills, VolunteerHistory, Notifications
 from .serializers import RegisterSerializer, UserProfileSerializer, UserAvailabilitySerializer, UserSkillsSerializer, EventDetailsSerializer, EventSkillsSerializer, VolunteerHistorySerializer, NotificationSerializer
 from django.db import transaction
+from django.http import HttpResponse
+import csv
+from reportlab.pdfgen import canvas
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
 
 # Create your views here.
 
@@ -329,3 +334,129 @@ class NotificationsView(generics.ListAPIView):
             notification.delete()
             return Response({"message": "Notification deleted successfully"}, status=status.HTTP_200_OK)
         return Response({"error": "Notification not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+class EventCSVReportView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not request.user.is_admin:
+            return Response({"error": "Only admins can access this report"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        events = EventDetails.objects.all().prefetch_related('volunteers__user_profile', 'required_skills')
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = "attachment; filename=events_report.csv"
+
+        writer = csv.writer(response)
+        writer.writerow(["Event Name", "Description", "Location", "Urgency", "Event Date", "Required Skills", "Assigned Volunteers"])
+
+        for event in events:
+            required_skills = ", ".join(skill.name for skill in event.required_skills.all())
+            assigned_volunteers = ", ".join(v.user_profile.full_name for v in event.volunteers.all())
+            writer.writerow([
+                event.event_name,
+                event.description,
+                event.location,
+                event.urgency,
+                event.event_date.strftime("%Y-%m-%d"),
+                required_skills,
+                assigned_volunteers,
+            ])
+        return response
+    
+class EventPDFReportView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not request.user.is_admin:
+            return Response({"error": "Only admins can access this report"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        events = EventDetails.objects.all().prefetch_related('volunteers__user_profile', 'required_skills')
+
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename=events_report.pdf'
+
+        p = canvas.Canvas(response, pagesize=letter)
+        width, height = letter
+        y = height - 40
+        p.setFont("Helvetica-Bold", 14)
+        p.drawString(200, y, "Events Report")
+        y -= 30
+        p.setFont("Helvetica", 10)
+
+        for event in events:
+            required_skills = ", ".join(skill.name for skill in event.required_skills.all())
+            assigned_volunteers = ", ".join(v.user_profile.full_name for v in event.volunteers.all())
+            p.drawString(40, y, f"Event Name: {event.event_name}")
+            y -= 15
+            p.drawString(40, y, f"Description: {event.description}")
+            y -= 15
+            p.drawString(40, y, f"Location: {event.location} | Urgency: {event.urgency} | Event Date: {event.event_date.strftime('%Y-%m-%d')}")
+            y -= 15
+            p.drawString(40, y, f"Required Skills: {required_skills}")
+            y -= 15
+            p.drawString(40, y, f"Assigned Volunteers: {assigned_volunteers}")
+            y -= 30
+            if y < 60:
+                p.showPage()
+                y = height - 40
+                p.setFont("Helvetica", 10)
+            
+        p.save()
+        return response
+    
+class VolunteerReportCSV(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not request.user.is_admin:
+            return Response({"error": "Only admins can access this report"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = "attachment; filename=volunteer_report.csv"
+
+        writer = csv.writer(response)
+        writer.writerow(['Volunteer Name', 'Event Name', 'Status', 'Event Date'])
+
+        histories = VolunteerHistory.objects.select_related('user_profile', 'event').all()
+        for history in histories:
+            writer.writerow([
+                history.user_profile.full_name,
+                history.event.event_name,
+                history.status,
+                history.event.event_date.strftime("%Y-%m-%d"),
+            ])
+        
+        return response
+    
+class VolunteerReportPDF(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not request.user.is_admin:
+            return Response({"error": "Only admins can access this report"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename=volunteer_report.pdf'
+
+        p = canvas.Canvas(response, pagesize=letter)
+        width, height = letter
+        y = height - 40
+        p.setFont("Helvetica-Bold", 14)
+        p.drawString(200, y, "Volunteer Report")
+        y -= 30
+        p.setFont("Helvetica", 10)
+
+        histories = VolunteerHistory.objects.select_related('user_profile', 'event').all()
+        for history in histories:
+            p.drawString(40, y, f"Volunteer Name: {history.user_profile.full_name}")
+            y -= 15
+            p.drawString(40, y, f"Event Name: {history.event.event_name} | Status: {history.status} | Event Date: {history.event.event_date.strftime('%Y-%m-%d')}")
+            y -= 30
+            if y < 60:
+                p.showPage()
+                y = height - 40
+                p.setFont("Helvetica", 10)
+
+        p.save()
+        return response

@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views import RegisterView, LoginView, UserHistoryDetailView, UserProfileView, UserAvailabilityView, UserSkillsView, EventDetailsView, EventSkillsView, UsersListView, UserDetailView, EventDetailedView, VolunteerHistoryView, VolunteerHistoryBulkCreateView, NotificationsView
+from .views import RegisterView, LoginView, UserHistoryDetailView, UserProfileView, UserAvailabilityView, UserSkillsView, EventDetailsView, EventSkillsView, UsersListView, UserDetailView, EventDetailedView, VolunteerHistoryView, VolunteerHistoryBulkCreateView, NotificationsView, EventCSVReportView, EventPDFReportView, VolunteerReportCSV, VolunteerReportPDF
 
 urlpatterns = [
     path("signup/", RegisterView.as_view(), name="signup"),
@@ -33,4 +33,8 @@ urlpatterns = [
     path("volunteer-history/", VolunteerHistoryView.as_view(), name="volunteer-history"),
     path("volunteer-history/bulk-create/", VolunteerHistoryBulkCreateView.as_view(), name="volunteer-history-bulk-create"),
     path("notifications/", NotificationsView.as_view(), name="notifications"),
+    path("report/events/csv/", EventCSVReportView.as_view(), name="event-csv-report"),
+    path("report/events/pdf/", EventPDFReportView.as_view(), name="event-pdf-report"),
+    path("report/volunteer-history/csv/", VolunteerReportCSV.as_view(), name="volunteer-history-csv-report"),
+    path("report/volunteer-history/pdf/", VolunteerReportPDF.as_view(), name="volunteer-history-pdf-report"),
 ]
