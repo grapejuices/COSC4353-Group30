@@ -43,8 +43,21 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '10vh', padding: '20px' }}>
-                  <ExportToPDF />
-                  <ExportToCSV />
+                  <div style={{ width: '1px', backgroundColor: 'black', height: '100%', margin: '0 20px' }}></div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <ExportToPDF event={true} />
+                    <ExportToPDF event={false} />
+                  </div>
+
+                  <div style={{ width: '1px', backgroundColor: 'black', height: '100%', margin: '0 20px' }}></div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <ExportToCSV event={true} />
+                    <ExportToCSV event={false} />
+                  </div>
+                  <div style={{ width: '1px', backgroundColor: 'black', height: '100%', margin: '0 20px' }}></div>
+
                 </div>
                 <EventsPage />
               </ProtectedRoute>

@@ -43,10 +43,7 @@ export const VolunteerTable: React.FC<VolunteerTableProps> = ({ onEditEvent }) =
                             Authorization: `Bearer ${accessToken}`,
                             },
                     }).then((response) => {
-                        console.log(response.data);
-
-
-                        // setEvents(response.data);
+                        // console.log(response.data);
                     setLoading(false);
                     }).catch((error) => {
                         console.error(error);

@@ -14,8 +14,6 @@ from reportlab.pdfgen import canvas
 from django.http import HttpResponse
 from reportlab.lib.pagesizes import letter
 
-# Create your views here.
-
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
@@ -153,7 +151,6 @@ class UserSkillsView(generics.ListCreateAPIView):
 
         return Response({"message": "Skills updated successfully."}, status=status.HTTP_200_OK)
 
-# THIS IS WRONG
 class UserHistoryDetailView(generics.RetrieveAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]

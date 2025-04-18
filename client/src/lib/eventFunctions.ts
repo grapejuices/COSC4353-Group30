@@ -81,10 +81,53 @@ export const getVolunteer = async (id: number): Promise<any> => {
 export const getSkillsFromVolunteer = async (id: string): Promise<string[]> => {
     try {
         const response = await axios.get(`${BACKEND_URL}/users/${id}/`, getAuthHeaders());
-
         return response.data.skills;
     } catch (error) {
         console.error("Error getting skills from volunteer:", error);
         return [];
+    }
+};
+
+export const getCSVReportEvent = async (): Promise<any> => {
+    try{
+        const response = await axios.get(`${BACKEND_URL}/report/events/csv/`, getAuthHeaders());
+        return response.data;
+    }
+    catch (error) {
+        console.error("Error getting CSV report:", error);
+        return {};
+    }
+};
+
+export const getPDFReportEvent = async (): Promise<any> => {
+    try{
+        const response = await axios.get(`${BACKEND_URL}/report/events/pdf/`, getAuthHeaders());
+        return response.data;
+    }
+    catch (error) {
+        console.error("Error getting PDF report:", error);
+        return {};
+    }
+};
+
+export const getCSVReportVolunteer = async (): Promise<any> => {
+    try{
+        const response = await axios.get(`${BACKEND_URL}/report/volunteer-history/csv/`, getAuthHeaders());
+        return response.data;
+    }
+    catch (error) {
+        console.error("Error getting CSV report:", error);
+        return {};
+    }
+};
+
+export const getPDFReportVolunteer = async (): Promise<any> => {
+    try{
+        const response = await axios.get(`${BACKEND_URL}/report/volunteer-history/pdf/`, getAuthHeaders());
+        return response.data;
+    }
+    catch (error) {
+        console.error("Error getting PDF report:", error);
+        return {};
     }
 };
