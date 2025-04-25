@@ -42,7 +42,7 @@ function App() {
             path="/adashboard"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '10vh', padding: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '20vh', padding: '20px' }}>
                   <div style={{ width: '1px', backgroundColor: 'black', height: '100%', margin: '0 20px' }}></div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
